@@ -1,0 +1,23 @@
+.root {
+    -fx-base: #24211e;
+    -fx-background: #1a1816;
+    -fx-control-inner-background: #24211e;
+    -fx-accent: #c9a24a;
+    -fx-focus-color: #c9a24a;
+    -fx-font-size: 13px;
+    -fx-text-fill: #e8e2d6;
+}
+.label, .check-box { -fx-text-fill: #e8e2d6; }
+.muted { -fx-text-fill: #9a9184; -fx-font-size: 12px; }
+.info { -fx-background-color: #24211e; -fx-padding: 8; -fx-background-radius: 6; }
+.scroll-pane, .scroll-pane > .viewport { -fx-background-color: transparent; }
+.card { -fx-padding: 8 10; -fx-background-radius: 6; -fx-background-color: #24211e; -fx-border-color: transparent transparent transparent #6b5f4d; -fx-border-width: 0 0 0 3; }
+.card-done { -fx-border-color: transparent transparent transparent #5f8f4e; }
+.ach-name { -fx-font-weight: bold; -fx-font-size: 14px; }
+.badge { -fx-padding: 1 6; -fx-background-radius: 8; -fx-font-size: 11px; }
+.badge-done { -fx-background-color: #3d5a32; -fx-text-fill: #d6eccb; }
+.badge-open { -fx-background-color: #3a352e; -fx-text-fill: #cfc6b8; }
+.badge-missable { -fx-background-color: #6a3a1e; -fx-text-fill: #ffd9bf; }
+.button.small { -fx-font-size: 11px; -fx-padding: 2 8; }
+.progress-bar > .bar { -fx-background-color: #c9a24a; -fx-background-insets: 0; }
+.toggle-button:selected { -fx-background-color: #c9a24a; -fx-text-fill: #1a1816; -fx-font-weight: bold; }
