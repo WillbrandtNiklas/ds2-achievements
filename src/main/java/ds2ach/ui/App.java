@@ -3,6 +3,7 @@ package ds2ach.ui;
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
 import ds2ach.logic.Evaluator;
+import ds2ach.logic.Warnings;
 import ds2ach.save.Backups;
 import ds2ach.save.CharacterSlot;
 import ds2ach.save.SaveWatcher;
@@ -42,6 +43,9 @@ public class App extends Application {
     private boolean updatingCombo;
     /** Achievements, deren Guide gerade aufgeklappt ist. */
     private final Set<String> expanded = new HashSet<>();
+    private Warnings warnings;
+    private final VBox warnBox = new VBox(4);
+    private boolean showAllWarnings;
 
     private final ComboBox<String> slotBox = new ComboBox<>();
     private final Label charLabel = new Label("–"), ngLabel = new Label("–"), areaLabel = new Label("–"),
@@ -61,6 +65,7 @@ public class App extends Application {
             return;
         }
         evaluator = new Evaluator(db.gameData);
+        warnings = new Warnings(db.gameData);
         state = UserState.load(appDir.resolve("state.json"));
         backups = new Backups(appDir.resolve("backups"));
 
@@ -179,7 +184,8 @@ public class App extends Application {
         statusLabel.getStyleClass().add("muted");
         statusLabel.setWrapText(true);
 
-        VBox root = new VBox(10, top, info, new VBox(3, progress, progressLabel), filters, scroll, statusLabel);
+        warnBox.getStyleClass().add("warnings");
+        VBox root = new VBox(10, top, info, warnBox, new VBox(3, progress, progressLabel), filters, scroll, statusLabel);
         root.setPadding(new Insets(12));
         return root;
     }
@@ -267,10 +273,19 @@ public class App extends Application {
         }
 
         UserState.CharState cs = current == null ? new UserState.CharState() : state.character(slotKey(current));
+        Map<String, Evaluator.Result> results = new HashMap<>();
+        for (Achievement a : db.achievements) results.put(a.id(), evaluator.evaluate(a, current));
+        List<Warnings.Hinweis> hints = warnings.compute(db.achievements, current,
+                a -> effectiveDone(a, results.get(a.id()), cs), a -> cs.hidden.contains(a.id()));
+        renderWarnings(hints);
+        Map<String, List<Warnings.Hinweis>> missed = new HashMap<>();
+        for (Warnings.Hinweis h : hints)
+            if (h.stufe() == Warnings.Stufe.VERPASST) missed.computeIfAbsent(h.achievement().id(), k -> new ArrayList<>()).add(h);
+
         int done = 0, total = 0, hiddenCount = 0;
         for (Achievement a : db.achievements) {
             boolean hidden = cs.hidden.contains(a.id());
-            Evaluator.Result r = evaluator.evaluate(a, current);
+            Evaluator.Result r = results.get(a.id());
             boolean isDone = effectiveDone(a, r, cs);
             if (hidden) hiddenCount++;
             else {
@@ -284,7 +299,7 @@ public class App extends Application {
                 case ERLEDIGT -> isDone;
                 case VERPASSBAR -> a.verpassbar() && !isDone;
             };
-            if (show) list.getChildren().add(card(a, r, isDone, hidden, cs));
+            if (show) list.getChildren().add(card(a, r, isDone, hidden, cs, missed.getOrDefault(a.id(), List.of())));
         }
         progress.setProgress(total == 0 ? 0 : (double) done / total);
         progressLabel.setText(done + " / " + total + " erledigt" + (hiddenCount > 0 ? "  (" + hiddenCount + " ausgeblendet)" : ""));
@@ -296,7 +311,42 @@ public class App extends Application {
         return r.status() == Evaluator.Auto.ERLEDIGT;
     }
 
-    private Node card(Achievement a, Evaluator.Result r, boolean isDone, boolean hidden, UserState.CharState cs) {
+    /** Warnbereich oben: alle aktuellen Warnungen, die nächsten 3 kommenden, Rest aufklappbar. */
+    private void renderWarnings(List<Warnings.Hinweis> hints) {
+        warnBox.getChildren().clear();
+        List<Warnings.Hinweis> now = hints.stream().filter(h -> h.stufe() == Warnings.Stufe.JETZT).toList();
+        List<Warnings.Hinweis> next = hints.stream().filter(h -> h.stufe() == Warnings.Stufe.KOMMEND).toList();
+        for (Warnings.Hinweis h : now) warnBox.getChildren().add(warnLine("⚠ " + h.achievement().name() + ": " + h.text(), "warn-now"));
+        int shown = showAllWarnings ? next.size() : Math.min(3, next.size());
+        for (int i = 0; i < shown; i++)
+            warnBox.getChildren().add(warnLine("› " + next.get(i).achievement().name() + ": " + next.get(i).text(), "warn-next"));
+        if (next.size() > 3) {
+            Button more = new Button(showAllWarnings ? "Weniger anzeigen" : "Alle kommenden Warnungen (" + next.size() + ")");
+            more.getStyleClass().addAll("small", "link");
+            more.setOnAction(e -> {
+                showAllWarnings = !showAllWarnings;
+                render();
+            });
+            warnBox.getChildren().add(more);
+        }
+        if (warnBox.getChildren().isEmpty() && current != null)
+            warnBox.getChildren().add(warnLine("Keine Points of no Return in Sicht.", "warn-next"));
+        warnBox.setVisible(!warnBox.getChildren().isEmpty());
+        warnBox.setManaged(warnBox.isVisible());
+    }
+
+    private static Label warnLine(String text, String style) {
+        Label l = new Label(text);
+        l.setWrapText(true);
+        // Ohne diese Grenzen kuerzt JavaFX lange Texte mit "..." statt umzubrechen
+        l.setMaxWidth(Double.MAX_VALUE);
+        l.setMinHeight(Region.USE_PREF_SIZE);
+        l.getStyleClass().add(style);
+        return l;
+    }
+
+    private Node card(Achievement a, Evaluator.Result r, boolean isDone, boolean hidden, UserState.CharState cs,
+                      List<Warnings.Hinweis> missed) {
         CheckBox check = new CheckBox();
         check.setSelected(isDone);
         check.setDisable(current == null);
@@ -317,7 +367,12 @@ public class App extends Application {
         badge.getStyleClass().addAll("badge", isDone ? "badge-done" : "badge-open");
         HBox title = new HBox(8, check, name, badge);
         title.setAlignment(Pos.CENTER_LEFT);
-        if (a.verpassbar()) {
+        boolean isMissed = !isDone && !missed.isEmpty();
+        if (isMissed) {
+            Label m = new Label("verpasst (?)");
+            m.getStyleClass().addAll("badge", "badge-missed");
+            title.getChildren().add(m);
+        } else if (a.verpassbar()) {
             Label m = new Label("verpassbar");
             m.getStyleClass().addAll("badge", "badge-missable");
             title.getChildren().add(m);
@@ -350,6 +405,18 @@ public class App extends Application {
         src.getStyleClass().add("muted");
 
         VBox box = new VBox(4, title, desc, src);
+        if (isMissed) {
+            StringBuilder sb = new StringBuilder();
+            for (Warnings.Hinweis h : missed) sb.append(h.text()).append('\n');
+            sb.append(a.ngPlus() != null ? "NG+: " + a.ngPlus() : "In NG+ nachholbar.");
+            sb.append("\n(Beruht auf der noch unbestätigten Boss-Erkennung. Falsch? Einfach abhaken oder ausblenden.)");
+            box.getChildren().add(warnLine(sb.toString(), "missed-text"));
+        } else if (a.ngPlus() != null && a.verpassbar() && !isDone) {
+            Label ng = new Label("Falls verpasst: " + a.ngPlus());
+            ng.setWrapText(true);
+            ng.getStyleClass().add("muted");
+            box.getChildren().add(ng);
+        }
         if (a.guide() != null || (a.unsicher() != null && !a.unsicher().isEmpty())) {
             boolean open = expanded.contains(a.id());
             Button toggle = new Button(open ? "▾ Guide ausblenden" : "▸ Guide anzeigen");

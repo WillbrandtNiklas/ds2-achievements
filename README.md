@@ -4,7 +4,7 @@ Checkliste für einen Durchgang in **Dark Souls II: Scholar of the First Sin** (
 **Spielstand**, nicht aus deinen Steam-Achievements. Die App liest nur. Sie verändert weder den Spielstand noch den
 Spielspeicher.
 
-Stand: **Schritt 2 (Guides)**. Warnungen vor Points of no Return (Schritt 3) und der Item-Geber (Schritt 4) folgen.
+Stand: **Schritt 3 (Warnungen)**. Der Item-Geber (Schritt 4) folgt.
 
 ## Starten
 
@@ -26,6 +26,26 @@ ausführen. Für Änderungen an der JSON-Datei reicht ein Neustart der App.
   - `backup_*.sl2` höchstens einmal pro Tag, die neuesten 10 bleiben erhalten
 - **Slot:** „Automatisch“ zeigt den Slot, dessen Daten sich bei der letzten Speicherung geändert haben, also den
   Charakter, den du gerade spielst. Über die Auswahl oben kannst du einen Slot fest einstellen.
+
+## Warnungen (Points of no Return)
+
+Der rote Kasten oben zeigt, was du **jetzt** beachten musst, und die nächsten kommenden Warnungen:
+
+- **⚠ fett:** Gerade relevant. Du bist im passenden Gebiet (z. B. Aldias Festung: Navlaans Hebel nicht ziehen,
+  Lucatiel nicht zu früh ansprechen), eine Boss-Seele liegt im Inventar und sollte bei Straid getauscht werden,
+  oder der Endboss ist besiegt und vor NG+ ist noch etwas offen.
+- **› normal:** Kommt später, sortiert nach grober Story-Reihenfolge, z. B. „Bevor du Boss X besiegst: Lucatiel
+  beschwören“. Weitere Einträge lassen sich ausklappen.
+- **verpasst (?)** an einem Achievement: Der Point of no Return ist überschritten, z. B. alle Bosse mit Lucatiels
+  Zeichen besiegt oder eine Boss-Seele verbraucht. Darunter steht, ob und wie es noch geht (Leuchtfeuer-Asket, NG+).
+  Das beruht auf der noch unbestätigten Boss-Erkennung. Stimmt es nicht, einfach abhaken oder ausblenden.
+
+Die Warnungen stehen pro Achievement in `data/achievements.json` unter `warnungen` (Typen `vorBoss`, `seele`,
+`gebiet`), die NG+-Infos unter `ngPlus`. Boss-Reihenfolge und Boss-Gebiete stehen in `data/gamedata.json`
+(`bossOrder`, `bossMaps`).
+
+Was die App **nicht** erkennen kann: ob ein NPC tot ist. Die meisten verpassbaren Achievements gehen nur verloren,
+wenn du den falschen NPC tötest. Ein Leuchtfeuer-Asket belebt keine NPCs wieder.
 
 ## Bedienung
 
@@ -58,6 +78,8 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 | NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
 | Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
+| Boss-Gebiete für „jetzt“-Warnungen | Kandidaten, abhängig von den teils unbestätigten Gebietsnamen |
+| Tote NPCs | nicht erkennbar |
 | Zauber (Master of …) | zuverlässig, Listen vollständig inkl. DLC (31 / 28 / 24 / 23) |
 | Covenants | über den Siegel-Ring im Inventar (nur nach Beitritt; nur „entdeckt“ bitte selbst abhaken) |
 | NPC-Ausrüstung (Benhart, Lucatiel, Vengarl, Cale, McDuff) | über typische Items, unbestätigt |
@@ -94,3 +116,4 @@ java SaveProbe.java diff snapshots\A.sl2 snapshots\B.sl2
 - Offsets für Werte und Inventar, Item-IDs (MIT): [alfizari/Dark-Souls-2-Save-Editor-PS4-PC](https://github.com/alfizari/Dark-Souls-2-Save-Editor-PS4-PC)
 - Reihenfolge der Boss-Zähler: [FrankvdStam/SoulSplitter](https://github.com/FrankvdStam/SoulSplitter)
 - Guides (eigene Zusammenfassung): [PSNProfiles Dark Souls II Trophy Guide](https://psnprofiles.com/guide/357-dark-souls-ii-trophy-guide)
+- NPC-Details für SotFS (Lucatiel, Benhart): [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)

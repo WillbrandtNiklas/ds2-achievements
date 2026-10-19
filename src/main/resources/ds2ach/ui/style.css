@@ -25,3 +25,8 @@
 .button.link:hover { -fx-underline: true; }
 .guide { -fx-background-color: #1e1c19; -fx-padding: 8; -fx-background-radius: 4; }
 .uncertain { -fx-text-fill: #f0a050; -fx-font-size: 12px; }
+.warnings { -fx-background-color: #2a1d17; -fx-padding: 8; -fx-background-radius: 6; -fx-border-color: #8a3b1c; -fx-border-radius: 6; }
+.warn-now { -fx-text-fill: #ffb38a; -fx-font-weight: bold; }
+.warn-next { -fx-text-fill: #d8c8b8; -fx-font-size: 12px; }
+.badge-missed { -fx-background-color: #8a1f1f; -fx-text-fill: #ffd6d6; }
+.missed-text { -fx-text-fill: #ff9a9a; -fx-font-size: 12px; }
