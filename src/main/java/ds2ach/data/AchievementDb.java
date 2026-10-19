@@ -18,8 +18,9 @@ public final class AchievementDb {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Achievement(String id, String name, String beschreibung, Bedingung bedingung,
-                              String sicherheit, boolean verpassbar, String erkennungHinweis) {
-        public boolean unsicher() {
+                              String sicherheit, boolean verpassbar, String erkennungHinweis,
+                              String guide, List<String> unsicher) {
+        public boolean erkennungUnsicher() {
             return !"sicher".equals(sicherheit);
         }
     }

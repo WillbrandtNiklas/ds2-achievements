@@ -4,8 +4,7 @@ Checkliste für einen Durchgang in **Dark Souls II: Scholar of the First Sin** (
 **Spielstand**, nicht aus deinen Steam-Achievements. Die App liest nur. Sie verändert weder den Spielstand noch den
 Spielspeicher.
 
-Stand: **Schritt 1 (Grundgerüst)**. Guides (Schritt 2), Warnungen vor Points of no Return (Schritt 3) und der
-Item-Geber (Schritt 4) folgen.
+Stand: **Schritt 2 (Guides)**. Warnungen vor Points of no Return (Schritt 3) und der Item-Geber (Schritt 4) folgen.
 
 ## Starten
 
@@ -35,12 +34,15 @@ ausführen. Für Änderungen an der JSON-Datei reicht ein Neustart der App.
 - **Ausblenden:** Zum Beispiel für Achievements, die du schon hast. Sie zählen dann nicht mehr zum Fortschritt.
   „Ausgeblendete zeigen“ holt sie zurück.
 - **Filter:** Alle / Offen / Erledigt / Verpassbar.
+- **Guide anzeigen:** Kurze Anleitung pro Achievement (Ort, Voraussetzungen, NPC-Schritte). Unsichere Angaben stehen
+  orange darunter mit „Unsicher, bitte prüfen“.
 - **Immer im Vordergrund:** Praktisch auf dem zweiten Monitor.
 - Deine Einstellungen stehen in `state.json`, getrennt pro Charakter (Slot und Name).
 
 ## Daten selbst korrigieren
 
-- `data/achievements.json` enthält alle 38 Achievements mit Bedingung, Sicherheit und dem Merkmal verpassbar.
+- `data/achievements.json` enthält alle 38 Achievements mit Bedingung, Sicherheit, dem Merkmal verpassbar, Guide
+  (`guide`) und unsicheren Punkten (`unsicher`).
   Die erlaubten Bedingungstypen stehen oben in der Datei.
 - `data/gamedata.json` enthält Gebietsnamen, Bossnamen, Zauberlisten und Item-IDs.
 
@@ -53,16 +55,22 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 | Charaktername, Slot, Seelenlevel, Seelen | zuverlässig |
 | Inventar (Items, Ringe, Zauber, Schlüsselitems) | zuverlässig |
 | Aktuelles Gebiet | zuverlässig. Die Namen einiger Gebiete sind noch unbestätigt (mit „(?)“ markiert). |
-| NG-Zyklus | Wert wird gelesen, die Bedeutung ist noch unbestätigt |
-| Besiegte Bosse | Kandidat, noch unbestätigt |
+| NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
+| Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
-| Ur-Leuchtfeuer, Covenants, NPC-Quests, Gesten, Tode, Waffenstufe | noch nicht erkannt, bitte selbst abhaken |
+| Zauber (Master of …) | zuverlässig, Listen vollständig inkl. DLC (31 / 28 / 24 / 23) |
+| Covenants | über den Siegel-Ring im Inventar (nur nach Beitritt; nur „entdeckt“ bitte selbst abhaken) |
+| NPC-Ausrüstung (Benhart, Lucatiel, Vengarl, Cale, McDuff) | über typische Items, unbestätigt |
+| Ur-Leuchtfeuer, NPC-Quests ohne Item, Gesten, Tode, Waffenstufe, Bundrang | noch nicht erkannt, bitte selbst abhaken |
 
 ## Bekannte Einschränkungen
 
 - Das Spielstand-Format ist nicht offiziell dokumentiert. Grundlage sind Open-Source-Projekte und eigene Vergleiche.
   Nach einem Spiel-Update kann sich das Format ändern.
-- Die Zauberlisten für „Master of …“ stammen aus einem Save-Editor und sind evtl. unvollständig (DLC-Zauber prüfen).
+- Guides beruhen u. a. auf einem Trophäenleitfaden für die Originalversion. Wo SotFS abweichen kann (NPC-Orte,
+  Beschwörungszeichen), ist das als unsicher markiert. Deutsche Item- und Zaubernamen sind eigene Übersetzungen.
+- 7 Zauber gibt es erst in NG+ bzw. NG++. Die vier „Master of …“-Achievements sind im ersten Durchgang deshalb nicht
+  komplett machbar, außer über Bundränge.
 - Achievement-Namen sind die offiziellen englischen Namen. Die deutschen Beschreibungen sind eigene Übersetzungen.
 - Die DLCs haben keine eigenen Achievements.
 
@@ -85,3 +93,4 @@ java SaveProbe.java diff snapshots\A.sl2 snapshots\B.sl2
 - Entschlüsselung (AES-128-CBC, MD5 pro Eintrag): [mi5hmash/SL2Bonfire](https://github.com/mi5hmash/SL2Bonfire)
 - Offsets für Werte und Inventar, Item-IDs (MIT): [alfizari/Dark-Souls-2-Save-Editor-PS4-PC](https://github.com/alfizari/Dark-Souls-2-Save-Editor-PS4-PC)
 - Reihenfolge der Boss-Zähler: [FrankvdStam/SoulSplitter](https://github.com/FrankvdStam/SoulSplitter)
+- Guides (eigene Zusammenfassung): [PSNProfiles Dark Souls II Trophy Guide](https://psnprofiles.com/guide/357-dark-souls-ii-trophy-guide)

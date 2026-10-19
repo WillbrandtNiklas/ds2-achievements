@@ -40,6 +40,8 @@ public class App extends Application {
     private CharacterSlot current;
     private Filter filter = Filter.ALLE;
     private boolean updatingCombo;
+    /** Achievements, deren Guide gerade aufgeklappt ist. */
+    private final Set<String> expanded = new HashSet<>();
 
     private final ComboBox<String> slotBox = new ComboBox<>();
     private final Label charLabel = new Label("–"), ngLabel = new Label("–"), areaLabel = new Label("–"),
@@ -74,6 +76,11 @@ public class App extends Application {
         watcher.start();
 
         // Testhilfe: --snapshot=datei.png speichert nach 6 s ein Bild des Fensters und beendet die App
+        String expand = getParameters().getNamed().get("expand");
+        if (expand != null) {
+            expanded.addAll(List.of(expand.split(",")));
+            render();
+        }
         String snap = getParameters().getNamed().get("snapshot");
         if (snap != null) {
             javafx.animation.PauseTransition t = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(6));
@@ -250,8 +257,9 @@ public class App extends Application {
             bossLabel.setText("–");
         } else {
             charLabel.setText(current.name() + "  (Slot " + current.index() + ", SL " + current.level() + ", " + current.souls() + " Seelen)");
-            ngLabel.setText(current.ngValue() <= 1 ? "NG (Wert " + current.ngValue() + ", unbestätigt)"
-                    : "NG+" + (current.ngValue() - 1) + " (Wert " + current.ngValue() + ", unbestätigt)");
+            // Wert 1 = NG ist bestaetigt (Fortnite), hoehere Werte als NG+ sind abgeleitet
+            ngLabel.setText(current.ngValue() <= 1 ? "NG"
+                    : "NG+" + (current.ngValue() - 1) + " (Wert " + current.ngValue() + ", NG+ noch unbestätigt)");
             areaLabel.setText(db.gameData.mapName(current.mapId()));
             String last = state.character(slotKey(current)).lastBoss;
             bossLabel.setText(last != null ? db.gameData.bossName(last) + " (?)"
@@ -331,7 +339,7 @@ public class App extends Application {
         desc.setWrapText(true);
 
         String source = switch (r.status()) {
-            case ERLEDIGT, OFFEN -> "Automatisch" + (a.unsicher() ? " (?, unbestätigt)" : "") + ": " + r.detail();
+            case ERLEDIGT, OFFEN -> "Automatisch" + (a.erkennungUnsicher() ? " (?, unbestätigt)" : "") + ": " + r.detail();
             case MANUELL -> "Nicht automatisch erkennbar: bitte selbst abhaken.";
         };
         String o = cs.override.get(a.id());
@@ -342,9 +350,38 @@ public class App extends Application {
         src.getStyleClass().add("muted");
 
         VBox box = new VBox(4, title, desc, src);
+        if (a.guide() != null || (a.unsicher() != null && !a.unsicher().isEmpty())) {
+            boolean open = expanded.contains(a.id());
+            Button toggle = new Button(open ? "▾ Guide ausblenden" : "▸ Guide anzeigen");
+            toggle.getStyleClass().addAll("small", "link");
+            toggle.setOnAction(e -> {
+                if (!expanded.remove(a.id())) expanded.add(a.id());
+                render();
+            });
+            box.getChildren().add(toggle);
+            if (open) box.getChildren().add(guideBox(a));
+        }
         box.getStyleClass().addAll("card", isDone ? "card-done" : "card-open");
         if (hidden) box.setOpacity(0.5);
         return box;
+    }
+
+    private static Node guideBox(Achievement a) {
+        VBox g = new VBox(4);
+        g.getStyleClass().add("guide");
+        if (a.guide() != null) {
+            Label t = new Label(a.guide());
+            t.setWrapText(true);
+            g.getChildren().add(t);
+        }
+        if (a.unsicher() != null)
+            for (String u : a.unsicher()) {
+                Label l = new Label("⚠ Unsicher, bitte prüfen: " + u);
+                l.setWrapText(true);
+                l.getStyleClass().add("uncertain");
+                g.getChildren().add(l);
+            }
+        return g;
     }
 
     private static Path findAppDir() {

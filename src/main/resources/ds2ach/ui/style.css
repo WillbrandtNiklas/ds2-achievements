@@ -21,3 +21,7 @@
 .button.small { -fx-font-size: 11px; -fx-padding: 2 8; }
 .progress-bar > .bar { -fx-background-color: #c9a24a; -fx-background-insets: 0; }
 .toggle-button:selected { -fx-background-color: #c9a24a; -fx-text-fill: #1a1816; -fx-font-weight: bold; }
+.button.link { -fx-background-color: transparent; -fx-text-fill: #c9a24a; -fx-padding: 0; -fx-cursor: hand; }
+.button.link:hover { -fx-underline: true; }
+.guide { -fx-background-color: #1e1c19; -fx-padding: 8; -fx-background-radius: 4; }
+.uncertain { -fx-text-fill: #f0a050; -fx-font-size: 12px; }
