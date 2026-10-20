@@ -2,6 +2,7 @@ package ds2ach.ui;
 
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
+import ds2ach.data.Items;
 import ds2ach.logic.Evaluator;
 import ds2ach.logic.Warnings;
 import ds2ach.save.Backups;
@@ -47,6 +48,7 @@ public class App extends Application {
     private final VBox warnBox = new VBox(4);
     private boolean showAllWarnings;
     private MapWindow mapWindow;
+    private Items items;
 
     private final ComboBox<String> slotBox = new ComboBox<>();
     private final Label charLabel = new Label("–"), ngLabel = new Label("–"), areaLabel = new Label("–"),
@@ -67,6 +69,11 @@ public class App extends Application {
         }
         evaluator = new Evaluator(db.gameData);
         warnings = new Warnings(db.gameData, db.world);
+        try {
+            items = Items.load(appDir).orElse(null);
+        } catch (Exception e) {
+            System.err.println("extracted/items.json nicht lesbar: " + e.getMessage());
+        }
         state = UserState.load(appDir.resolve("state.json"));
         backups = new Backups(appDir.resolve("backups"));
 
@@ -92,6 +99,7 @@ public class App extends Application {
         Map<String, String> named = getParameters().getNamed();
         if (getParameters().getUnnamed().contains("--map") || named.containsKey("mapsnapshot")) openMap();
         if (named.containsKey("select")) openMap().select(named.get("select"));
+        if (named.containsKey("tab")) openMap().selectTab(named.get("tab"));
         String snap = named.get("snapshot"), mapSnap = named.get("mapsnapshot");
         if (snap != null || mapSnap != null) {
             javafx.animation.PauseTransition t = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(6));
@@ -106,10 +114,20 @@ public class App extends Application {
 
     private MapWindow openMap() {
         if (mapWindow == null)
-            mapWindow = new MapWindow(db, warnings, Objects.requireNonNull(App.class.getResource("style.css")).toExternalForm());
+            mapWindow = new MapWindow(db, warnings, items, Objects.requireNonNull(App.class.getResource("style.css")).toExternalForm(),
+                    this::toggleLot);
         mapWindow.show();
         render();
         return mapWindow;
+    }
+
+    /** Item-Fundort selbst abhaken bzw. Haken entfernen (pro Charakter in state.json). */
+    private void toggleLot(long lotId) {
+        if (current == null) return;
+        Set<Long> s = state.character(slotKey(current)).collectedLots;
+        if (!s.remove(lotId)) s.add(lotId);
+        state.save();
+        render();
     }
 
     private static void writePng(javafx.scene.image.WritableImage img, Path out) {
@@ -335,7 +353,7 @@ public class App extends Application {
                 boolean d = effectiveDone(a, results.get(a.id()), cs);
                 views.add(new MapWindow.AchView(a, d ? "erledigt" : missed.containsKey(a.id()) ? "verpasst (?)" : "offen"));
             }
-            mapWindow.update(current, views, hints);
+            mapWindow.update(current, views, hints, cs.collectedLots);
         }
     }
 

@@ -2,6 +2,8 @@ package ds2ach.ui;
 
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
+import ds2ach.data.Items;
+import ds2ach.logic.ItemStatus;
 import ds2ach.data.World;
 import ds2ach.data.World.Area;
 import ds2ach.logic.Warnings;
@@ -21,10 +23,11 @@ import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
- * Weltkarte als Verbindungsgraph in einem eigenen Fenster (für den zweiten Monitor).
- * Mausrad = zoomen, Ziehen = verschieben, Klick auf ein Gebiet = Details rechts.
+ * Weltkarte in einem eigenen Fenster (für den zweiten Monitor): Pergamentkarte oder Diagramm.
+ * Mausrad = zoomen, Ziehen = verschieben, Klick auf ein Gebiet = Details und Items rechts.
  */
 public final class MapWindow {
     static final double NODE_W = 164, NODE_H = 58;
@@ -42,6 +45,16 @@ public final class MapWindow {
     private final VBox side = new VBox(8);
     private final Label header = new Label();
     private final CheckBox showDlc = new CheckBox("DLC-Gebiete zeigen");
+    private final ToggleButton viewMap = new ToggleButton("Karte"), viewDiagram = new ToggleButton("Diagramm");
+    private final ParchmentView parchment;
+    private final Items items;
+    private final Consumer<Long> onToggleLot;
+    private final VBox itemsBox = new VBox(6);
+    private final ComboBox<String> catFilter = new ComboBox<>();
+    private final CheckBox onlyOpen = new CheckBox("nur nicht eingesammelte"), showNgPlus = new CheckBox("NG+-Fundorte");
+    private final TabPane tabs = new TabPane();
+    private final Set<Integer> achItemIds = new HashSet<>();
+    private Set<Long> manualLots = Set.of();
 
     private CharacterSlot current;
     private WorldStatus status;
@@ -50,10 +63,46 @@ public final class MapWindow {
     private String selected;
     private double dragX, dragY;
 
-    public MapWindow(AchievementDb db, Warnings warnings, String stylesheet) {
+    public MapWindow(AchievementDb db, Warnings warnings, Items items, String stylesheet, Consumer<Long> onToggleLot) {
         this.db = db;
         this.world = db.world;
         this.warnings = warnings;
+        this.items = items;
+        this.onToggleLot = onToggleLot;
+        this.parchment = new ParchmentView(world);
+        // Items mit Achievement-Bezug: Bedingungs-Items und alle Zauber der Master-Achievements
+        for (Achievement a : db.achievements)
+            if (a.bedingung() != null && a.bedingung().ids() != null)
+                for (String id : a.bedingung().ids()) achItemIds.add(AchievementDb.parseId(id));
+        db.gameData.spells().values().forEach(l -> l.forEach(s -> achItemIds.add(AchievementDb.parseId(s.id()))));
+
+        ToggleGroup views = new ToggleGroup();
+        viewMap.setToggleGroup(views);
+        viewDiagram.setToggleGroup(views);
+        viewMap.setSelected(true);
+        views.selectedToggleProperty().addListener((o, a, b) -> {
+            if (b == null) {
+                ((ToggleButton) a).setSelected(true);
+                return;
+            }
+            redraw();
+            resetView();
+        });
+        parchment.node().setOnMouseClicked(e -> {
+            if (!e.isStillSincePress()) return;
+            parchment.hit(e.getX() / ParchmentView.RES, e.getY() / ParchmentView.RES, hiddenAreas()).ifPresent(a -> select(a.id()));
+        });
+
+        catFilter.getItems().add("Wichtige Items");
+        for (Items.Kategorie k : Items.Kategorie.values()) catFilter.getItems().add(k.label);
+        catFilter.getItems().add("Alle Items");
+        catFilter.getSelectionModel().select(0);
+        catFilter.setOnAction(e -> showItems());
+        onlyOpen.setOnAction(e -> showItems());
+        showNgPlus.setOnAction(e -> {
+            redraw();
+            showItems();
+        });
 
         showDlc.setSelected(true);
         showDlc.setOnAction(e -> {
@@ -62,7 +111,7 @@ public final class MapWindow {
         });
         Button reset = new Button("Ansicht zurücksetzen");
         reset.setOnAction(e -> resetView());
-        HBox top = new HBox(12, header, spacer(), legend(), showDlc, reset);
+        HBox top = new HBox(12, header, spacer(), legend(), viewMap, viewDiagram, showDlc, reset);
         top.setAlignment(Pos.CENTER_LEFT);
         top.setPadding(new Insets(8, 12, 8, 12));
         top.getStyleClass().add("map-top");
@@ -88,13 +137,25 @@ public final class MapWindow {
         });
 
         side.setPadding(new Insets(12));
-        side.setPrefWidth(360);
         ScrollPane sideScroll = new ScrollPane(side);
         sideScroll.setFitToWidth(true);
-        sideScroll.setPrefWidth(380);
         sideScroll.getStyleClass().add("map-side");
+        itemsBox.setPadding(new Insets(12));
+        HBox filterRow = new HBox(8, catFilter, onlyOpen);
+        filterRow.setAlignment(Pos.CENTER_LEFT);
+        VBox itemsTop = new VBox(6, filterRow, showNgPlus);
+        itemsTop.setPadding(new Insets(10, 12, 4, 12));
+        ScrollPane itemsScroll = new ScrollPane(itemsBox);
+        itemsScroll.setFitToWidth(true);
+        itemsScroll.getStyleClass().add("map-side");
+        VBox.setVgrow(itemsScroll, Priority.ALWAYS);
+        Tab areaTab = new Tab("Gebiet", sideScroll), itemTab = new Tab("Items", new VBox(itemsTop, itemsScroll));
+        areaTab.setClosable(false);
+        itemTab.setClosable(false);
+        tabs.getTabs().addAll(areaTab, itemTab);
+        tabs.setPrefWidth(400);
 
-        BorderPane root = new BorderPane(viewport, top, sideScroll, null, null);
+        BorderPane root = new BorderPane(viewport, top, tabs, null, null);
         Scene scene = new Scene(root, 1500, 900);
         scene.getStylesheets().add(stylesheet);
         stage.setScene(scene);
@@ -117,6 +178,11 @@ public final class MapWindow {
         return stage;
     }
 
+    /** Testhilfe: Reiter "Gebiet" oder "Items" anzeigen. */
+    public void selectTab(String name) {
+        for (Tab tb : tabs.getTabs()) if (tb.getText().equalsIgnoreCase(name)) tabs.getSelectionModel().select(tb);
+    }
+
     public void select(String areaId) {
         selected = areaId;
         redraw();
@@ -124,8 +190,10 @@ public final class MapWindow {
     }
 
     /** Wird bei jedem neuen Spielstand bzw. jeder Änderung in der Checkliste aufgerufen. */
-    public void update(CharacterSlot c, List<AchView> achViews, List<Warnings.Hinweis> hints) {
+    public void update(CharacterSlot c, List<AchView> achViews, List<Warnings.Hinweis> hints, Set<Long> manualLots) {
         this.current = c;
+        this.manualLots = manualLots == null ? Set.of() : manualLots;
+        if (c != null && !showNgPlus.isSelected() && c.ngValue() > 1) showNgPlus.setSelected(true);
         this.achViews = achViews;
         this.hints = hints;
         this.status = new WorldStatus(world, db.gameData, c);
@@ -140,7 +208,10 @@ public final class MapWindow {
     private void resetView() {
         javafx.application.Platform.runLater(() -> {
             double maxX = 0, maxY = 0;
-            for (Area a : world.areas) {
+            if (viewMap.isSelected()) {
+                maxX = ParchmentView.W;
+                maxY = ParchmentView.H;
+            } else for (Area a : world.areas) {
                 if (!visible(a)) continue;
                 maxX = Math.max(maxX, a.x() + NODE_W);
                 maxY = Math.max(maxY, a.y() + NODE_H);
@@ -162,9 +233,23 @@ public final class MapWindow {
         return showDlc.isSelected() || a.dlc() == null;
     }
 
+    private Set<String> hiddenAreas() {
+        Set<String> h = new HashSet<>();
+        for (Area a : world.areas) if (!visible(a)) h.add(a.id());
+        return h;
+    }
+
     private void redraw() {
         content.getChildren().clear();
         if (status == null) status = new WorldStatus(world, db.gameData, current);
+        if (viewMap.isSelected()) {
+            Set<String> lit = new HashSet<>();
+            if (current != null) current.litBonfires().forEach(b -> lit.add(String.valueOf(b)));
+            parchment.setDownBosses(current == null ? Set.of() : current.bossKills().keySet());
+            parchment.draw(status, lit, hiddenAreas(), selected, itemCounts());
+            content.getChildren().add(parchment.node());
+            return;
+        }
         // Kanten zuerst, damit die Knoten darüber liegen
         for (WorldStatus.ConnState cs : status.connections) {
             Area a = world.area(cs.connection().von()), b = world.area(cs.connection().nach());
@@ -276,9 +361,117 @@ public final class MapWindow {
         return h;
     }
 
+    /** Wichtige Items pro Gebiet (offen / gesamt) für die Kartenbeschriftung. */
+    private Map<String, ParchmentView.ItemCount> itemCounts() {
+        Map<String, ParchmentView.ItemCount> m = new HashMap<>();
+        if (items == null) return m;
+        for (Area a : world.areas) {
+            int total = 0, open = 0;
+            for (Items.Lot l : items.lotsFor(world, a)) {
+                if (!ngVisible(l) || l.zufall() || l.items().stream().noneMatch(i -> i.kategorie().important())) continue;
+                total++;
+                if (!ItemStatus.of(l, current, manualLots).done()) open++;
+            }
+            m.put(a.id(), new ParchmentView.ItemCount(open, total));
+        }
+        return m;
+    }
+
+    private boolean ngVisible(Items.Lot l) {
+        return showNgPlus.isSelected() || !l.ngPlusOnly();
+    }
+
     // ---------- Seitenleiste ----------
 
+    private void showItems() {
+        itemsBox.getChildren().clear();
+        Area a = selected == null ? null : world.area(selected);
+        if (items == null) {
+            itemsBox.getChildren().add(wrap("Noch keine Item-Daten. Einmal setup.bat im App-Ordner ausführen: Es liest die "
+                    + "Fundorte aus deiner Spielinstallation (nur lesend).", "uncertain"));
+            return;
+        }
+        if (items.outdated())
+            itemsBox.getChildren().add(wrap("⚠ Die Spieldatei hat sich seit dem Setup geändert. Bitte setup.bat neu ausführen.", "uncertain"));
+        if (a == null) {
+            itemsBox.getChildren().add(wrap("Klick auf ein Gebiet, um seine Items zu sehen.", "muted"));
+            return;
+        }
+        Label title = new Label("Items: " + a.name());
+        title.getStyleClass().add("side-title");
+        itemsBox.getChildren().add(title);
+
+        // Geteilte Karten: Items stehen beim ersten Gebiet der Karte, eine genauere Ortsangabe gibt es nicht
+        Set<String> sharedWith = new LinkedHashSet<>();
+        Area primary = null;
+        if (a.karten() != null)
+            for (String k : a.karten()) {
+                int mapId = AchievementDb.parseId(k);
+                Area p = world.primaryArea(mapId);
+                if (p != null && !p.id().equals(a.id()) && primary == null) primary = p;
+                for (Area o : world.areasOnMap(mapId)) if (!o.id().equals(a.id())) sharedWith.add(o.name());
+            }
+        List<Items.Lot> lots = items.lotsFor(world, a);
+        if (lots.isEmpty() && primary != null) {
+            itemsBox.getChildren().add(wrap("Dieses Gebiet teilt sich die Karte mit " + primary.name()
+                    + ". Die Spieldaten unterscheiden die Fundorte nicht genauer, deshalb stehen alle Items dort.", "muted"));
+            return;
+        }
+        if (!sharedWith.isEmpty())
+            itemsBox.getChildren().add(wrap("Enthält auch die Items von " + String.join(", ", sharedWith)
+                    + " (gleiche Karte, keine genauere Ortsangabe in den Spieldaten).", "muted"));
+
+        String cat = catFilter.getValue();
+        int done = 0, total = 0;
+        List<Node> rows = new ArrayList<>();
+        for (Items.Lot l : lots) {
+            if (!ngVisible(l)) continue;
+            boolean match = l.items().stream().anyMatch(i -> switch (cat) {
+                case "Alle Items" -> true;
+                case "Wichtige Items" -> i.kategorie().important();
+                default -> i.kategorie().label.equals(cat);
+            });
+            if (!match) continue;
+            ItemStatus.Status st = ItemStatus.of(l, current, manualLots);
+            total++;
+            if (st.done()) done++;
+            if (onlyOpen.isSelected() && st.done()) continue;
+            rows.add(lotRow(l, st));
+        }
+        itemsBox.getChildren().add(wrap(done + " von " + total + " Fundorten eingesammelt (" + cat + ")", "side-section"));
+        itemsBox.getChildren().addAll(rows);
+        if (rows.isEmpty()) itemsBox.getChildren().add(wrap("Keine passenden Fundorte.", "muted"));
+        itemsBox.getChildren().add(wrap("Eingesammelt = eindeutiges Item (Schlüssel, Ring, Zauber, Waffe, Rüstung) liegt im Inventar. "
+                + "Bei Verbrauchsgütern, Estus Flask Shards usw. steht „unbekannt“, bis die Aufheben-Flags entschlüsselt sind. "
+                + "Mit dem Häkchen hakst du selbst ab. ★ = relevant für ein Achievement.", "muted"));
+    }
+
+    private Node lotRow(Items.Lot l, ItemStatus.Status st) {
+        CheckBox cb = new CheckBox();
+        cb.setSelected(st.done());
+        cb.setDisable(current == null || st == ItemStatus.Status.EINGESAMMELT);
+        cb.setOnAction(e -> onToggleLot.accept(l.id()));
+        List<String> parts = new ArrayList<>();
+        boolean ach = false;
+        for (Items.Item i : l.items()) {
+            parts.add(i.name() + (i.menge() > 1 ? " ×" + i.menge() : "") + (i.stufe() > 0 ? " +" + i.stufe() : ""));
+            ach |= achItemIds.contains(i.id());
+        }
+        Label name = wrap((l.zufall() ? "Zufällig eines davon: " + String.join(" / ", parts) : String.join(", ", parts))
+                + (ach ? "  ★" : ""), st.done() ? "done-text" : null);
+        String cats = String.join(", ", l.items().stream().map(i -> i.kategorie().label).distinct().toList());
+        String where = l.ort() == null ? "" : l.ort().replace(" - Chest", "").replace(" NG+", "");
+        boolean special = !where.isEmpty() && world.areas.stream().noneMatch(ar -> where.startsWith(ar.name()) || ar.name().startsWith(where));
+        Label sub = wrap((special ? where + " · " : "") + (l.chest() ? "Truhe · " : "") + cats + " · " + st.label + (l.ngPlusOnly() ? " · nur NG+" : ""), "muted");
+        VBox v = new VBox(1, name, sub);
+        HBox.setHgrow(v, Priority.ALWAYS);
+        HBox row = new HBox(8, cb, v);
+        row.setAlignment(Pos.TOP_LEFT);
+        return row;
+    }
+
     private void showDetails() {
+        showItems();
         side.getChildren().clear();
         Area a = selected == null ? null : world.area(selected);
         if (a == null) {

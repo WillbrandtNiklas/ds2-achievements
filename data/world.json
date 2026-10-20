@@ -3,10 +3,13 @@
   "Weltkarte: Gebiete (Knoten) und Verbindungen (Kanten). Frei editierbar, die App liest die Datei beim Start.",
   "Gebiet: karten = Karten-IDs aus dem Spielstand (z. B. 0x0A040000 = m10_04 Majula). Mehrere Gebiete können dieselbe Karte teilen.",
   "x/y = Position auf der Karte in Pixeln. leuchtfeuer = IDs (siehe leuchtfeuerNamen). bosse = Schlüssel aus gamedata.json.",
+  "karte = Position (x, y) und Größe (r) auf der Pergamentkarte (1600 x 1000). x/y oben = Position in der Diagramm-Ansicht.",
+  "itemKarten = zusätzliche Karten-IDs nur für die Item-Zuordnung (z. B. Geschenke von Dyna & Tillo, m50_00).",
+  "gelaende = Symbol auf der Pergamentkarte: wald, berg, burg, turm, wasser, hoehle, stadt, erinnerung.",
   "Verbindung: typ weg | aufzug | tuer | teleport | schiff | sprung. einbahn = nur in Pfeilrichtung.",
   "voraussetzung: items (eines davon reicht), alleItems (alle nötig), bosse (alle nötig), text (Erklärung). Eine Verbindung gilt als offen, wenn die Voraussetzung erfüllt ist oder beide Gebiete schon besucht wurden.",
   "unsicher: Hinweise, die noch geprüft werden müssen (werden in der App als 'bitte prüfen' angezeigt).",
-  "Quellen: Fextralife Dark Souls 2 Wiki (Gebiete, Bosse, Leuchtfeuer, Schlüssel), Leuchtfeuer-IDs und -Namen aus Atvaarks ID-Liste, Kartenzuordnung über die Leuchtfeuer-IDs im Spielstand."
+  "Quellen: Fextralife Dark Souls 2 Wiki (Gebiete, Bosse, Leuchtfeuer, Schlüssel), Leuchtfeuer-IDs und -Namen aus Atvaarks ID-Liste, Kartenzuordnung über die Leuchtfeuer-IDs im Spielstand. Karten-IDs der m20-Karten (Memories, Shrine of Amana, Drangleic Castle, Undead Crypt) über die Item-Fundorte bestätigt."
  ],
  "leuchtfeuerNamen": {
   "2650": "Fire Keepers' Dwelling",
@@ -99,7 +102,16 @@
    "leuchtfeuer": [
     2650
    ],
-   "bosse": []
+   "bosse": [],
+   "karte": {
+    "x": 150,
+    "y": 560,
+    "r": 58
+   },
+   "itemKarten": [
+    "0x32000000"
+   ],
+   "gelaende": "wald"
   },
   {
    "id": "majula",
@@ -112,7 +124,13 @@
    "leuchtfeuer": [
     4650
    ],
-   "bosse": []
+   "bosse": [],
+   "karte": {
+    "x": 360,
+    "y": 640,
+    "r": 62
+   },
+   "gelaende": "stadt"
   },
   {
    "id": "forest",
@@ -131,7 +149,13 @@
    "bosse": [
     "LastGiant",
     "Pursuer"
-   ]
+   ],
+   "karte": {
+    "x": 300,
+    "y": 420,
+    "r": 70
+   },
+   "gelaende": "wald"
   },
   {
    "id": "memory_vammar",
@@ -144,8 +168,14 @@
    "leuchtfeuer": [],
    "bosse": [],
    "unsicher": [
-    "Karten-ID m20_10 geraten (Variante der Forest-Karte)."
-   ]
+    "Teilt sich die Karte m20_10 mit den anderen Giant Memories (laut Item-Daten bestätigt)."
+   ],
+   "karte": {
+    "x": 70,
+    "y": 225,
+    "r": 34
+   },
+   "gelaende": "erinnerung"
   },
   {
    "id": "memory_orro",
@@ -158,8 +188,14 @@
    "leuchtfeuer": [],
    "bosse": [],
    "unsicher": [
-    "Karten-ID m20_10 geraten."
-   ]
+    "Teilt sich die Karte m20_10 mit den anderen Giant Memories (laut Item-Daten bestätigt)."
+   ],
+   "karte": {
+    "x": 80,
+    "y": 325,
+    "r": 34
+   },
+   "gelaende": "erinnerung"
   },
   {
    "id": "memory_jeigh",
@@ -174,8 +210,14 @@
     "GiantLord"
    ],
    "unsicher": [
-    "Karten-ID m20_10 geraten."
-   ]
+    "Teilt sich die Karte m20_10 mit den anderen Giant Memories (laut Item-Daten bestätigt)."
+   ],
+   "karte": {
+    "x": 215,
+    "y": 265,
+    "r": 36
+   },
+   "gelaende": "erinnerung"
   },
   {
    "id": "heides_tower",
@@ -191,7 +233,13 @@
    ],
    "bosse": [
     "Dragonrider"
-   ]
+   ],
+   "karte": {
+    "x": 585,
+    "y": 660,
+    "r": 54
+   },
+   "gelaende": "turm"
   },
   {
    "id": "cathedral_of_blue",
@@ -206,13 +254,20 @@
    ],
    "bosse": [
     "OldDragonslayer"
-   ]
+   ],
+   "karte": {
+    "x": 655,
+    "y": 560,
+    "r": 40
+   },
+   "gelaende": "burg"
   },
   {
    "id": "no_mans_wharf",
    "name": "No-Man's Wharf",
    "karten": [
-    "0x0A120000"
+    "0x0A120000",
+    "0x0A1E0000"
    ],
    "x": 970,
    "y": 305,
@@ -221,7 +276,16 @@
    ],
    "bosse": [
     "FlexileSentry"
-   ]
+   ],
+   "unsicher": [
+    "Karte m10_30 heißt in den Item-Daten 'Unseen Path to Heide' und ist hier geraten zugeordnet."
+   ],
+   "karte": {
+    "x": 790,
+    "y": 705,
+    "r": 54
+   },
+   "gelaende": "wasser"
   },
   {
    "id": "lost_bastille",
@@ -240,7 +304,13 @@
    ],
    "bosse": [
     "RuinSentinels"
-   ]
+   ],
+   "karte": {
+    "x": 965,
+    "y": 655,
+    "r": 66
+   },
+   "gelaende": "burg"
   },
   {
    "id": "belfry_luna",
@@ -255,7 +325,13 @@
    ],
    "bosse": [
     "BelfryGargoyles"
-   ]
+   ],
+   "karte": {
+    "x": 1005,
+    "y": 535,
+    "r": 40
+   },
+   "gelaende": "turm"
   },
   {
    "id": "sinners_rise",
@@ -270,7 +346,13 @@
    ],
    "bosse": [
     "LostSinner"
-   ]
+   ],
+   "karte": {
+    "x": 1125,
+    "y": 745,
+    "r": 50
+   },
+   "gelaende": "burg"
   },
   {
    "id": "huntsmans_copse",
@@ -287,7 +369,13 @@
    ],
    "bosse": [
     "SkeletonLords"
-   ]
+   ],
+   "karte": {
+    "x": 480,
+    "y": 500,
+    "r": 54
+   },
+   "gelaende": "wald"
   },
   {
    "id": "undead_purgatory",
@@ -302,7 +390,13 @@
    ],
    "bosse": [
     "ExecutionersChariot"
-   ]
+   ],
+   "karte": {
+    "x": 565,
+    "y": 405,
+    "r": 40
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "harvest_valley",
@@ -316,7 +410,13 @@
     17665,
     17650
    ],
-   "bosse": []
+   "bosse": [],
+   "karte": {
+    "x": 660,
+    "y": 465,
+    "r": 52
+   },
+   "gelaende": "berg"
   },
   {
    "id": "earthen_peak",
@@ -334,7 +434,13 @@
    "bosse": [
     "CovetousDemon",
     "Mytha"
-   ]
+   ],
+   "karte": {
+    "x": 775,
+    "y": 395,
+    "r": 56
+   },
+   "gelaende": "berg"
   },
   {
    "id": "iron_keep",
@@ -352,7 +458,13 @@
    "bosse": [
     "SmelterDemon",
     "OldIronKing"
-   ]
+   ],
+   "karte": {
+    "x": 895,
+    "y": 315,
+    "r": 62
+   },
+   "gelaende": "burg"
   },
   {
    "id": "belfry_sol",
@@ -365,7 +477,13 @@
    "leuchtfeuer": [
     19665
    ],
-   "bosse": []
+   "bosse": [],
+   "karte": {
+    "x": 1015,
+    "y": 265,
+    "r": 38
+   },
+   "gelaende": "turm"
   },
   {
    "id": "grave_of_saints",
@@ -381,7 +499,13 @@
    ],
    "bosse": [
     "RoyalRatVanguard"
-   ]
+   ],
+   "karte": {
+    "x": 380,
+    "y": 800,
+    "r": 46
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "the_gutter",
@@ -395,7 +519,13 @@
     25665,
     25655
    ],
-   "bosse": []
+   "bosse": [],
+   "karte": {
+    "x": 300,
+    "y": 870,
+    "r": 50
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "black_gulch",
@@ -411,7 +541,13 @@
    ],
    "bosse": [
     "TheRotten"
-   ]
+   ],
+   "karte": {
+    "x": 200,
+    "y": 935,
+    "r": 52
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "shaded_woods",
@@ -429,7 +565,13 @@
    ],
    "bosse": [
     "Najka"
-   ]
+   ],
+   "karte": {
+    "x": 430,
+    "y": 325,
+    "r": 62
+   },
+   "gelaende": "wald"
   },
   {
    "id": "doors_of_pharros",
@@ -445,7 +587,13 @@
    ],
    "bosse": [
     "RoyalRatAuthority"
-   ]
+   ],
+   "karte": {
+    "x": 520,
+    "y": 235,
+    "r": 46
+   },
+   "gelaende": "burg"
   },
   {
    "id": "brightstone_cove",
@@ -463,7 +611,13 @@
    "bosse": [
     "Magnus",
     "Freja"
-   ]
+   ],
+   "karte": {
+    "x": 430,
+    "y": 140,
+    "r": 58
+   },
+   "gelaende": "stadt"
   },
   {
    "id": "shrine_of_winter",
@@ -475,12 +629,19 @@
    "bosse": [],
    "unsicher": [
     "Karten-ID unbekannt."
-   ]
+   ],
+   "karte": {
+    "x": 625,
+    "y": 265,
+    "r": 40
+   },
+   "gelaende": "berg"
   },
   {
    "id": "drangleic_castle",
    "name": "Drangleic Castle",
    "karten": [
+    "0x14150000",
     "0x0A150000"
    ],
    "x": 1350,
@@ -493,12 +654,19 @@
    ],
    "bosse": [
     "TwinDragonriders"
-   ]
+   ],
+   "karte": {
+    "x": 735,
+    "y": 180,
+    "r": 64
+   },
+   "gelaende": "burg"
   },
   {
    "id": "kings_passage",
    "name": "King's Passage",
    "karten": [
+    "0x14150000",
     "0x0A150000"
    ],
    "x": 1540,
@@ -506,13 +674,20 @@
    "leuchtfeuer": [],
    "bosse": [
     "LookingGlassKnight"
-   ]
+   ],
+   "karte": {
+    "x": 845,
+    "y": 135,
+    "r": 38
+   },
+   "gelaende": "burg"
   },
   {
    "id": "throne_of_want",
    "name": "Throne of Want",
    "karten": [
-    "0x14150000"
+    "0x14150000",
+    "0x0A150000"
    ],
    "x": 1540,
    "y": 400,
@@ -523,13 +698,20 @@
     "Aldia"
    ],
    "unsicher": [
-    "Karten-ID m20_21 geraten."
-   ]
+    "Ob der Throne of Want eine eigene Karte hat, ist unklar (hier: Karte von Drangleic Castle)."
+   ],
+   "karte": {
+    "x": 735,
+    "y": 60,
+    "r": 40
+   },
+   "gelaende": "burg"
   },
   {
    "id": "shrine_of_amana",
    "name": "Shrine of Amana",
    "karten": [
+    "0x140B0000",
     "0x0A0B0000"
    ],
    "x": 1730,
@@ -542,12 +724,19 @@
    ],
    "bosse": [
     "DemonOfSong"
-   ]
+   ],
+   "karte": {
+    "x": 950,
+    "y": 105,
+    "r": 52
+   },
+   "gelaende": "wasser"
   },
   {
    "id": "undead_crypt",
    "name": "Undead Crypt",
    "karten": [
+    "0x14180000",
     "0x0A180000"
    ],
    "x": 1730,
@@ -559,21 +748,31 @@
    "bosse": [
     "Velstadt",
     "Vendrick"
-   ]
+   ],
+   "karte": {
+    "x": 1060,
+    "y": 70,
+    "r": 46
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "memory_of_the_king",
    "name": "Memory of the King",
-   "karten": [
-    "0x14180000"
-   ],
+   "karten": [],
    "x": 1730,
    "y": 685,
    "leuchtfeuer": [],
    "bosse": [],
    "unsicher": [
-    "Karten-ID m20_24 und Zugang geraten."
-   ]
+    "Karten-ID und Zugang unbekannt."
+   ],
+   "karte": {
+    "x": 1170,
+    "y": 45,
+    "r": 30
+   },
+   "gelaende": "erinnerung"
   },
   {
    "id": "aldias_keep",
@@ -589,7 +788,13 @@
    ],
    "bosse": [
     "GuardianDragon"
-   ]
+   ],
+   "karte": {
+    "x": 280,
+    "y": 150,
+    "r": 54
+   },
+   "gelaende": "burg"
   },
   {
    "id": "dragon_aerie",
@@ -602,7 +807,13 @@
    "leuchtfeuer": [
     27650
    ],
-   "bosse": []
+   "bosse": [],
+   "karte": {
+    "x": 195,
+    "y": 100,
+    "r": 44
+   },
+   "gelaende": "berg"
   },
   {
    "id": "dragon_shrine",
@@ -617,12 +828,25 @@
    ],
    "bosse": [
     "AncientDragon"
-   ]
+   ],
+   "karte": {
+    "x": 95,
+    "y": 78,
+    "r": 40
+   },
+   "itemKarten": [
+    "0x141A0000"
+   ],
+   "unsicher": [
+    "Items der Dragon Memories (m20_26) sind hier zugeordnet."
+   ],
+   "gelaende": "berg"
   },
   {
    "id": "dark_chasm",
    "name": "Dark Chasm of Old",
    "karten": [
+    "0x28030000",
     "0x28320000",
     "0x28330000",
     "0x28340000"
@@ -634,8 +858,14 @@
     "Darklurker"
    ],
    "unsicher": [
-    "Karten-IDs m40_50 bis m40_52 geraten."
-   ]
+    "m40_03 laut Item-Daten bestätigt, m40_50 bis m40_52 geraten."
+   ],
+   "karte": {
+    "x": 790,
+    "y": 905,
+    "r": 44
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "shulva",
@@ -650,7 +880,13 @@
     35685
    ],
    "bosse": [],
-   "dlc": "Sunken King"
+   "dlc": "Sunken King",
+   "karte": {
+    "x": 420,
+    "y": 935,
+    "r": 52
+   },
+   "gelaende": "stadt"
   },
   {
    "id": "dragons_sanctum",
@@ -667,7 +903,13 @@
     35680
    ],
    "bosse": [],
-   "dlc": "Sunken King"
+   "dlc": "Sunken King",
+   "karte": {
+    "x": 560,
+    "y": 955,
+    "r": 42
+   },
+   "gelaende": "burg"
   },
   {
    "id": "dragons_rest",
@@ -684,7 +926,13 @@
     "Elana",
     "Sinh"
    ],
-   "dlc": "Sunken King"
+   "dlc": "Sunken King",
+   "karte": {
+    "x": 680,
+    "y": 925,
+    "r": 40
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "cave_of_the_dead",
@@ -698,7 +946,13 @@
    "bosse": [
     "Graverobber"
    ],
-   "dlc": "Sunken King"
+   "dlc": "Sunken King",
+   "karte": {
+    "x": 600,
+    "y": 850,
+    "r": 34
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "brume_tower",
@@ -718,7 +972,13 @@
    "bosse": [
     "FumeKnight"
    ],
-   "dlc": "Old Iron King"
+   "dlc": "Old Iron King",
+   "karte": {
+    "x": 1120,
+    "y": 190,
+    "r": 52
+   },
+   "gelaende": "turm"
   },
   {
    "id": "iron_passage",
@@ -734,7 +994,13 @@
    "bosse": [
     "BlueSmelterDemon"
    ],
-   "dlc": "Old Iron King"
+   "dlc": "Old Iron King",
+   "karte": {
+    "x": 1235,
+    "y": 150,
+    "r": 40
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "memory_old_iron_king",
@@ -747,7 +1013,13 @@
    "dlc": "Old Iron King",
    "unsicher": [
     "Karten-ID unbekannt. Boss Sir Alonne wird noch nicht erkannt."
-   ]
+   ],
+   "karte": {
+    "x": 1335,
+    "y": 95,
+    "r": 36
+   },
+   "gelaende": "erinnerung"
   },
   {
    "id": "eleum_loyce",
@@ -768,7 +1040,13 @@
    "dlc": "Ivory King",
    "unsicher": [
     "Bosse Aava und Burnt Ivory King werden noch nicht erkannt."
-   ]
+   ],
+   "karte": {
+    "x": 1420,
+    "y": 330,
+    "r": 62
+   },
+   "gelaende": "burg"
   },
   {
    "id": "grand_cathedral",
@@ -782,7 +1060,13 @@
     37670
    ],
    "bosse": [],
-   "dlc": "Ivory King"
+   "dlc": "Ivory King",
+   "karte": {
+    "x": 1475,
+    "y": 215,
+    "r": 42
+   },
+   "gelaende": "burg"
   },
   {
    "id": "old_chaos",
@@ -794,7 +1078,13 @@
    "y": 305,
    "leuchtfeuer": [],
    "bosse": [],
-   "dlc": "Ivory King"
+   "dlc": "Ivory King",
+   "karte": {
+    "x": 1495,
+    "y": 125,
+    "r": 36
+   },
+   "gelaende": "hoehle"
   },
   {
    "id": "frigid_outskirts",
@@ -807,7 +1097,13 @@
    "dlc": "Ivory King",
    "unsicher": [
     "Karten-ID unbekannt. Bosse Lud und Zallen werden noch nicht erkannt."
-   ]
+   ],
+   "karte": {
+    "x": 1380,
+    "y": 445,
+    "r": 44
+   },
+   "gelaende": "berg"
   }
  ],
  "verbindungen": [

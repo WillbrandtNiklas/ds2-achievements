@@ -58,3 +58,6 @@
 .done-text { -fx-text-fill: #9fd08a; }
 .locked-text { -fx-text-fill: #ff9a9a; }
 .warn-next-side { -fx-text-fill: #d8c8b8; -fx-font-size: 12px; }
+.tab-pane { -fx-background-color: #1a1816; }
+.tab-pane > .tab-header-area > .headers-region > .tab:selected { -fx-background-color: #c9a24a; }
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label { -fx-text-fill: #1a1816; -fx-font-weight: bold; }

@@ -12,9 +12,14 @@ import java.util.Map;
 /** Weltkarte aus data/world.json: Gebiete (Knoten) und Verbindungen (Kanten). */
 public final class World {
 
+    /** Position und Größe auf der Pergamentkarte (1600 x 1000). */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Pos(double x, double y, double r) {}
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Area(String id, String name, List<String> karten, double x, double y, List<Integer> leuchtfeuer,
-                       List<String> bosse, String dlc, String hinweis, List<String> unsicher) {
+                       List<String> bosse, String dlc, String hinweis, List<String> unsicher, Pos karte,
+                       List<String> itemKarten, String gelaende) {
 
         public boolean onMap(int mapId) {
             if (karten == null) return false;
@@ -76,6 +81,14 @@ public final class World {
         List<Area> out = new ArrayList<>();
         for (Area a : areas) if (a.bosses().contains(boss)) out.add(a);
         return out;
+    }
+
+    /** Erstes Gebiet auf dieser Karte: bekommt bei geteilten Karten die Items zugeordnet. */
+    public Area primaryArea(int mapId) {
+        for (Area a : areas) if (a.onMap(mapId)) return a;
+        for (Area a : areas)
+            if (a.itemKarten() != null && a.itemKarten().stream().anyMatch(k -> AchievementDb.parseId(k) == mapId)) return a;
+        return null;
     }
 
     public String bonfireName(int id) {

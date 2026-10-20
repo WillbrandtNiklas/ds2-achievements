@@ -26,6 +26,8 @@ public final class UserState {
         public Map<String, String> override = new HashMap<>();
         public Set<String> hidden = new HashSet<>();
         public String lastBoss;
+        /** Item-Fundorte, die du selbst abgehakt hast (Lot-IDs aus extracted/items.json). */
+        public Set<Long> collectedLots = new HashSet<>();
         public Map<String, Integer> knownKills;
     }
 
