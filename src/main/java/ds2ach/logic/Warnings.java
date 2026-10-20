@@ -3,10 +3,13 @@ package ds2ach.logic;
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
 import ds2ach.data.AchievementDb.Warnung;
+import ds2ach.data.World;
 import ds2ach.save.CharacterSlot;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -29,9 +32,11 @@ public final class Warnings {
     public record Hinweis(Achievement achievement, Stufe stufe, String text, int sortKey) {}
 
     private final AchievementDb.GameData gd;
+    private final World world;
 
-    public Warnings(AchievementDb.GameData gd) {
+    public Warnings(AchievementDb.GameData gd, World world) {
         this.gd = gd;
+        this.world = world;
     }
 
     /**
@@ -41,13 +46,14 @@ public final class Warnings {
     public List<Hinweis> compute(List<Achievement> all, CharacterSlot c, Predicate<Achievement> done, Predicate<Achievement> hidden) {
         List<Hinweis> out = new ArrayList<>();
         if (c == null) return out;
-        String currentMap = String.format("0x%08X", c.mapId());
+        Set<String> here = new HashSet<>();
+        for (World.Area ar : world.areasOnMap(c.mapId())) here.add(ar.id());
         boolean endbossDown = c.bossKills().containsKey("Nashandra");
 
         for (Achievement a : all) {
             if (done.test(a) || hidden.test(a)) continue;
             if (a.warnungen() != null)
-                for (Warnung w : a.warnungen()) evaluate(a, w, c, currentMap, out);
+                for (Warnung w : a.warnungen()) evaluate(a, w, c, here, out);
             // Allgemein: nach dem Endboss vor dem Start von NG+ warnen
             if (a.verpassbar() && endbossDown)
                 out.add(new Hinweis(a, Stufe.JETZT, "Bevor du NG+ startest: " + a.name() + " ist noch offen."
@@ -57,7 +63,7 @@ public final class Warnings {
         return out;
     }
 
-    private void evaluate(Achievement a, Warnung w, CharacterSlot c, String currentMap, List<Hinweis> out) {
+    private void evaluate(Achievement a, Warnung w, CharacterSlot c, Set<String> here, List<Hinweis> out) {
         List<String> bosse = w.bosse() == null ? List.of() : w.bosse();
         switch (w.typ() == null ? "" : w.typ()) {
             case "vorBoss" -> {
@@ -68,8 +74,8 @@ public final class Warnings {
                     return;
                 }
                 for (String b : offen) {
-                    boolean here = currentMap.equalsIgnoreCase(gd.bossMaps() == null ? "" : gd.bossMaps().getOrDefault(b, ""));
-                    out.add(new Hinweis(a, here ? Stufe.JETZT : Stufe.KOMMEND, fill(w.text(), b, w), gd.bossRank(b)));
+                    boolean bossHere = world.areasWithBoss(b).stream().anyMatch(ar -> here.contains(ar.id()));
+                    out.add(new Hinweis(a, bossHere ? Stufe.JETZT : Stufe.KOMMEND, fill(w.text(), b, w), gd.bossRank(b)));
                 }
             }
             case "seele" -> {
@@ -84,11 +90,24 @@ public final class Warnings {
                     out.add(new Hinweis(a, Stufe.KOMMEND, fill(w.kommend(), boss, w), rank));
             }
             case "gebiet" -> {
-                if (w.gebiete() != null && w.gebiete().stream().anyMatch(currentMap::equalsIgnoreCase))
+                if (w.gebiete() != null && w.gebiete().stream().anyMatch(here::contains))
                     out.add(new Hinweis(a, Stufe.JETZT, fill(w.text(), null, w), -1));
             }
             default -> { }
         }
+    }
+
+    /** Spielt das Achievement in diesem Gebiet eine Rolle? (Feld gebiete, Bosse aus Bedingung und Warnungen, Gebietswarnungen) */
+    public boolean relevantFor(Achievement a, World.Area area) {
+        if (a.gebiete() != null && a.gebiete().contains(area.id())) return true;
+        if (a.bedingung() != null && a.bedingung().bosse() != null)
+            for (String b : a.bedingung().bosse()) if (area.bosses().contains(b)) return true;
+        if (a.warnungen() != null)
+            for (Warnung w : a.warnungen()) {
+                if (w.bosse() != null) for (String b : w.bosse()) if (area.bosses().contains(b)) return true;
+                if (w.gebiete() != null && w.gebiete().contains(area.id())) return true;
+            }
+        return false;
     }
 
     private String fill(String s, String boss, Warnung w) {

@@ -7,8 +7,10 @@
     "guide: kurze Anleitung in eigenen Worten. unsicher: Punkte, die noch geprüft werden müssen (werden in der App orange angezeigt).",
     "Namen: offizielle englische Steam-Namen. Beschreibung: eigene deutsche Übersetzung.",
     "Quelle der Guides: eigene Zusammenfassung u. a. nach dem PSNProfiles-Trophäenleitfaden (PS3-Version, für SotFS teils angepasst).",
-    "warnungen: Points of no Return. typ vorBoss (Warnung vor jedem Boss aus bosse, verpasst wenn alle besiegt), seele (Boss-Seele bei Straid tauschen), gebiet (Hinweis, solange du im Gebiet bist). Platzhalter: {boss} {seele} {zauber}.",
-    "ngPlus: ob und wie das Achievement in NG+ nachholbar ist."
+    "ngPlus: ob und wie das Achievement in NG+ nachholbar ist.",
+    "warnungen: Points of no Return. typ vorBoss (Warnung vor jedem Boss aus bosse, verpasst wenn alle besiegt), seele (Boss-Seele bei Straid tauschen), gebiet (Hinweis, solange du in einem der Gebiete aus world.json bist). Platzhalter: {boss} {seele} {zauber}.",
+    "gebiete: Gebiets-IDs aus world.json, in denen das Achievement eine Rolle spielt (für die Weltkarte).",
+    "Spielnamen (Gebiete, Bosse, NPCs, Items, Zauber, Bünde) sind englisch wie im Spiel, Erklärungen deutsch."
   ],
   "achievements": [
     {
@@ -20,7 +22,10 @@
       },
       "sicherheit": "sicher",
       "verpassbar": false,
-      "guide": "Kommt automatisch ganz am Anfang: In Zwischen den Dingen in die Hütte gehen und den Charakter erstellen."
+      "guide": "Kommt automatisch ganz am Anfang: In Things Betwixt in die Hütte gehen und den Charakter erstellen.",
+      "gebiete": [
+        "things_betwixt"
+      ]
     },
     {
       "id": "this_is_dark_souls",
@@ -37,7 +42,7 @@
     {
       "id": "last_giant",
       "name": "Last Giant",
-      "beschreibung": "Den letzten Riesen besiegen.",
+      "beschreibung": "The Last Giant besiegen.",
       "bedingung": {
         "typ": "boss",
         "bosse": [
@@ -46,12 +51,15 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "guide": "Erster Pflichtboss im Wald der gefallenen Riesen, unten am Aufzug. Tipp: zwischen seinen Beinen bleiben. Ab wenig Leben reißt er sich einen Arm ab und hat dann mehr Reichweite."
+      "guide": "Erster Pflichtboss im Forest of Fallen Giants, unten am Aufzug. Tipp: zwischen seinen Beinen bleiben. Ab wenig Leben reißt er sich einen Arm ab und hat dann mehr Reichweite.",
+      "gebiete": [
+        "forest"
+      ]
     },
     {
       "id": "looking_glass_knight",
       "name": "Looking Glass Knight",
-      "beschreibung": "Den Spiegelritter besiegen.",
+      "beschreibung": "Looking Glass Knight besiegen.",
       "bedingung": {
         "typ": "boss",
         "bosse": [
@@ -60,9 +68,12 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "guide": "Boss in Schloss Drangleic. Bei etwa 30–40 % Leben ruft er einen roten Phantom aus seinem Spiegel (offline ein NPC). Den Ritter selbst zu töten beendet den Kampf. Sein Schild wirft Magie zurück, also als Zauberer vorsichtig sein.",
+      "guide": "Boss in Drangleic Castle. Bei etwa 30–40 % Leben ruft er einen roten Phantom aus seinem Spiegel (offline ein NPC). Den Ritter selbst zu töten beendet den Kampf. Sein Schild wirft Magie zurück, also als Zauberer vorsichtig sein.",
       "unsicher": [
         "Achievement-Name: eine Quelle nennt 'Giant Lord', der Trophäenleitfaden 'Looking Glass Knight'. Steam-Namen bitte prüfen."
+      ],
+      "gebiete": [
+        "kings_passage"
       ]
     },
     {
@@ -77,15 +88,18 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "guide": "Optionaler Boss in der Untotengruft, er läuft dort herum, wo du den Königsring findest. Ohne 'Seele eines Riesen' im Inventar machst du kaum Schaden: je mehr du davon hast (bis 5), desto schwächer ist er. Quellen der Seelen: 3 in den Riesen-Erinnerungen (mit dem Aschennebelherz), 1 von den zwei Riesen in der Schwarzen Schlucht, 1 vom Uralten Drachen. Am besten erst ganz am Ende angehen.",
+      "guide": "Optionaler Boss in der Undead Crypt, er läuft dort herum, wo du den King's Ring findest. Ohne 'Soul of a Giant' im Inventar machst du kaum Schaden: je mehr du davon hast (bis 5), desto schwächer ist er. Quellen der Seelen: 3 in den Giant Memories (Vammar, Orro, Jeigh) (mit dem Ashen Mist Heart), 1 von den zwei Riesen in der Black Gulch, 1 vom Ancient Dragon. Am besten erst ganz am Ende angehen.",
       "unsicher": [
         "SotFS: Wenn Vendrick besiegt ist, folgt nach dem Endboss ein zusätzlicher Bosskampf (Aldia)."
+      ],
+      "gebiete": [
+        "undead_crypt"
       ]
     },
     {
       "id": "kings_ring",
       "name": "King's Ring",
-      "beschreibung": "Den Königsring erhalten.",
+      "beschreibung": "Den King's Ring erhalten.",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -94,12 +108,15 @@
       },
       "sicherheit": "sicher",
       "verpassbar": false,
-      "guide": "Nach dem Kampf gegen Velstadt in der Untotengruft liegt der Ring bei Vendrick. Story-Item, nicht verpassbar."
+      "guide": "Nach dem Kampf gegen Velstadt in der Undead Crypt liegt der Ring bei Vendrick. Story-Item, nicht verpassbar.",
+      "gebiete": [
+        "undead_crypt"
+      ]
     },
     {
       "id": "ancient_dragon",
       "name": "Ancient Dragon",
-      "beschreibung": "Das Aschennebelherz erhalten.",
+      "beschreibung": "Das Ashen Mist Heart erhalten.",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -108,7 +125,10 @@
       },
       "sicherheit": "sicher",
       "verpassbar": false,
-      "guide": "Story: Ganz oben im Drachenschrein mit dem Uralten Drachen sprechen. Nicht angreifen, er gibt dir das Herz einfach so."
+      "guide": "Story: Ganz oben im Dragon Shrine mit dem Ancient Dragon sprechen. Nicht angreifen, er gibt dir das Herz einfach so.",
+      "gebiete": [
+        "dragon_shrine"
+      ]
     },
     {
       "id": "the_heir",
@@ -119,57 +139,72 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "guide": "Endboss besiegen und den Abspann ansehen. Weg dorthin: Mit dem Aschennebelherz in die Erinnerungen der Riesen (Wald der gefallenen Riesen), dort den Riesenfürsten besiegen (Tür mit dem Königsring öffnen) und 'Riesen-Verwandtschaft' holen. Danach in Schloss Drangleic mit dem Königsring zum Thron des Begehrens. Nach dem Abspann landest du wieder in Majula und kannst weiter aufräumen, NG+ startet erst, wenn du es willst."
+      "guide": "Endboss besiegen und den Abspann ansehen. Weg dorthin: Mit dem Ashen Mist Heart in die Giant Memories im Forest of Fallen Giants, dort den Giant Lord besiegen (Tür mit dem King's Ring öffnen) und 'Giant's Kinship' holen. Danach in Drangleic Castle mit dem King's Ring zum Throne of Want. Nach dem Abspann landest du wieder in Majula und kannst weiter aufräumen, NG+ startet erst, wenn du es willst.",
+      "gebiete": [
+        "throne_of_want"
+      ]
     },
     {
       "id": "brightstone_bonfire",
       "name": "Brightstone Bonfire",
-      "beschreibung": "Das Ur-Leuchtfeuer in der Lichtsteinbucht Tseldora entzünden.",
+      "beschreibung": "Das Ur-Leuchtfeuer in der Brightstone Cove Tseldora entzünden.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
       "erkennungHinweis": "Flag noch nicht gefunden.",
-      "guide": "Des Herzogs liebe Freja in der Lichtsteinbucht Tseldora besiegen, danach das Ur-Leuchtfeuer anzünden. Erst ein paar Spinnen töten, dann auf die Köpfe gehen (Beine nehmen keinen Schaden)."
+      "guide": "The Duke's Dear Freja in der Brightstone Cove Tseldora besiegen, danach das Ur-Leuchtfeuer anzünden. Erst ein paar Spinnen töten, dann auf die Köpfe gehen (Beine nehmen keinen Schaden).",
+      "gebiete": [
+        "brightstone_cove"
+      ]
     },
     {
       "id": "gulch_bonfire",
       "name": "Gulch Bonfire",
-      "beschreibung": "Das Ur-Leuchtfeuer in der Schwarzen Schlucht entzünden.",
+      "beschreibung": "Das Ur-Leuchtfeuer in der Black Gulch entzünden.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
       "erkennungHinweis": "Flag noch nicht gefunden.",
-      "guide": "Den Verfaulten in der Schwarzen Schlucht besiegen und das Ur-Leuchtfeuer anzünden. Er schlägt hart, aber langsam. Vor dem Griff und den Feuergruben in der Arena aufpassen."
+      "guide": "The Rotten in der Black Gulch besiegen und das Ur-Leuchtfeuer anzünden. Er schlägt hart, aber langsam. Vor dem Griff und den Feuergruben in der Arena aufpassen.",
+      "gebiete": [
+        "black_gulch"
+      ]
     },
     {
       "id": "iron_keep_bonfire",
       "name": "Iron Keep Bonfire",
-      "beschreibung": "Das Ur-Leuchtfeuer in der Eisenfestung entzünden.",
+      "beschreibung": "Das Ur-Leuchtfeuer in der Iron Keep entzünden.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
       "erkennungHinweis": "Flag noch nicht gefunden.",
-      "guide": "Den Alten Eisenkönig in der Eisenfestung besiegen und das Ur-Leuchtfeuer anzünden. Ein Schild mit Feuerresistenz hilft. Den Flammenquarzring verkauft Rosabeth in Majula, nachdem du sie befreit hast."
+      "guide": "Den Old Iron King in der Iron Keep besiegen und das Ur-Leuchtfeuer anzünden. Ein Schild mit Feuerresistenz hilft. Den Flame Quartz Ring verkauft Rosabeth in Majula, nachdem du sie befreit hast.",
+      "gebiete": [
+        "iron_keep"
+      ]
     },
     {
       "id": "sinners_bonfire",
       "name": "Sinner's Bonfire",
-      "beschreibung": "Das Ur-Leuchtfeuer im Sünderturm entzünden.",
+      "beschreibung": "Das Ur-Leuchtfeuer im Sinners' Rise entzünden.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
       "erkennungHinweis": "Flag noch nicht gefunden.",
-      "guide": "Die Verlorene Sünderin im Sünderturm besiegen und das Ur-Leuchtfeuer anzünden. Tipp: Mit dem Bastille-Schlüssel die Seitenräume der Arena öffnen und das Öl dort mit einer Fackel anzünden. Dann ist es hell und der Kampf leichter.",
+      "guide": "Den Lost Sinner im Sinners' Rise besiegen und das Ur-Leuchtfeuer anzünden. Tipp: Mit dem Bastille Key die Seitenräume der Arena öffnen und das Öl dort mit einer Fackel anzünden. Dann ist es hell und der Kampf leichter.",
       "unsicher": [
-        "SotFS: Der Bastille-Schlüssel liegt bei einer Leiche nahe dem Leuchtfeuer 'Dienerquartier' (in der Originalversion in Glockenturm Luna)."
+        "SotFS: Der Bastille Key liegt bei einer Leiche nahe dem Leuchtfeuer Servants' Quarters (in der Originalversion in Belfry Luna)."
+      ],
+      "gebiete": [
+        "sinners_rise"
       ]
     },
     {
@@ -186,23 +221,27 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "erkennungHinweis": "Erkannt über Cales Ausrüstung im Inventar.",
-      "guide": "Eigentlich eine NPC-Quest: Kartograph Cale steht im Wald der gefallenen Riesen in einer Höhle nach dem zweiten Leuchtfeuer. Er gibt dir den Hausschlüssel für das Haus in Majula. Im Keller des Hauses das Skelett töten, danach steht Cale an der Karte. Nach dem Endboss sind alle Flammen an: Dann mit ihm reden, er gibt dir seine Ausrüstung und das Achievement. Cale NICHT töten.",
+      "erkennungHinweis": "Erkannt über Cale's Ausrüstung im Inventar.",
+      "guide": "Eigentlich eine NPC-Quest: Cartographer Cale steht im Forest of Fallen Giants in einer Höhle nach dem zweiten Leuchtfeuer. Er gibt dir den House Key für das Haus in Majula. Im Keller des Hauses das Skelett töten, danach steht Cale an der Karte. Nach dem Endboss sind alle Flammen an: Dann mit ihm reden, er gibt dir seine Ausrüstung und das Achievement. Cale NICHT töten.",
       "warnungen": [
         {
           "typ": "gebiet",
           "gebiete": [
-            "0x0A0A0000"
+            "forest"
           ],
-          "text": "Wald der gefallenen Riesen: Kartograph Cale (Höhle nach dem 2. Leuchtfeuer) ansprechen und nicht angreifen. Er gibt dir den Hausschlüssel für Majula."
+          "text": "Forest of Fallen Giants: Cartographer Cale (Höhle nach dem 2. Leuchtfeuer) ansprechen und nicht angreifen. Er gibt dir den House Key für Majula."
         }
       ],
-      "ngPlus": "In NG+ nachholbar, wenn Cale lebt."
+      "ngPlus": "In NG+ nachholbar, wenn Cale lebt.",
+      "gebiete": [
+        "forest",
+        "majula"
+      ]
     },
     {
       "id": "cov_meek",
       "name": "Covenant of the Meek",
-      "beschreibung": "Den Bund der Sanftmütigen entdecken (Weg des Blauen).",
+      "beschreibung": "Den Bund der Sanftmütigen entdecken (Way of the Blue).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -211,13 +250,16 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Blaue Siegel (gibt es beim Beitritt). Nur entdeckt, aber nicht beigetreten? Dann selbst abhaken.",
-      "guide": "Mit dem Niedergeschlagenen Saulden in Majula (oben am Hügel bei der Statue) reden, bis er den Beitritt anbietet. Das Achievement kommt schon beim Beitrittsdialog, beitreten musst du nicht."
+      "erkennungHinweis": "Erkannt über das Blue Seal (gibt es beim Beitritt). Nur entdeckt, aber nicht beigetreten? Dann selbst abhaken.",
+      "guide": "Mit dem Crestfallen Saulden in Majula (oben am Hügel bei der Statue) reden, bis er den Beitritt anbietet. Das Achievement kommt schon beim Beitrittsdialog, beitreten musst du nicht.",
+      "gebiete": [
+        "majula"
+      ]
     },
     {
       "id": "cov_brilliant",
       "name": "Brilliant Covenant",
-      "beschreibung": "Einen strahlenden Bund entdecken (Erben der Sonne).",
+      "beschreibung": "Einen strahlenden Bund entdecken (Heirs of the Sun).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -226,13 +268,16 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Sonnensiegel. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Im Erntetal nach dem zweiten Leuchtfeuer: an den zwei großen Gegnern im Giftsumpf vorbei, über die Brücke und links in eine Höhle. Dort vor dem Sonnenaltar knien. Ränge: 10 / 20 / 30 Sonnenlicht-Medaillen. Rang 3 gibt den Zauber 'Sonnenlichtspeer' (nötig für Master of Miracles). Offline sind die Medaillen nur seltene Drops (z. B. Riesen im Erntetal), dafür ist der Item-Geber gedacht."
+      "erkennungHinweis": "Erkannt über das Sun Seal. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Im Harvest Valley nach dem zweiten Leuchtfeuer: an den zwei großen Gegnern im Giftsumpf vorbei, über die Brücke und links in eine Höhle. Dort vor dem Altar of Sunlight knien. Ränge: 10 / 20 / 30 Sunlight Medals. Rang 3 gibt den Zauber 'Sunlight Spear' (nötig für Master of Miracles). Offline sind die Medaillen nur seltene Drops (z. B. Riesen im Harvest Valley), dafür ist der Item-Geber gedacht.",
+      "gebiete": [
+        "harvest_valley"
+      ]
     },
     {
       "id": "cov_protector",
       "name": "Protector Covenant",
-      "beschreibung": "Den Bund der Beschützer entdecken (Blaue Wächter).",
+      "beschreibung": "Den Bund der Beschützer entdecken (Blue Sentinels).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -241,13 +286,17 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Wächtersiegel. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Von Heides Flammenturm zur Blauen Kathedrale (an der Abzweigung links, Zugbrücke, Schalter rechts). Den Boss der Kathedrale besiegen, dann steht Blauer Wächter Targray auf dem Balkon. Du brauchst ein 'Zeichen der Treue': Es liegt im Jägerdickicht auf einer Plattform unter der langen Holzbrücke. Ihm zeigen, dann kommt der Beitrittsdialog."
+      "erkennungHinweis": "Erkannt über das Guardian's Seal. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Von Heide's Tower of Flame zur Cathedral of Blue (an der Abzweigung links, Zugbrücke, Schalter rechts). Den Boss der Kathedrale besiegen, dann steht Blue Sentinel Targray auf dem Balkon. Du brauchst ein 'Token of Fidelity': Es liegt im Huntsman's Copse auf einer Plattform unter der langen Holzbrücke. Ihm zeigen, dann kommt der Beitrittsdialog.",
+      "gebiete": [
+        "cathedral_of_blue",
+        "huntsmans_copse"
+      ]
     },
     {
       "id": "cov_sanguinary",
       "name": "Sanguinary Covenant",
-      "beschreibung": "Den Bund der Blutrünstigen entdecken (Bruderschaft des Blutes).",
+      "beschreibung": "Den Bund der Blutrünstigen entdecken (Brotherhood of Blood).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -256,13 +305,17 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Blutwappen. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Vom Jägerdickicht über die lange Holzbrücke zum Wagen des Henkers. Im Untotenfegefeuer die Treppe beim Torschalter hoch zu Titchy Gren. Er will ein 'Zeichen der Bosheit': Es liegt in einer Truhe im Grab der Heiligen."
+      "erkennungHinweis": "Erkannt über das Crest of Blood. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Vom Huntsman's Copse über die lange Holzbrücke zum Executioner's Chariot. Im Undead Purgatory die Treppe beim Torschalter hoch zu Titchy Gren. Er will ein 'Token of Spite': Es liegt in einer Truhe im Grave of Saints.",
+      "gebiete": [
+        "undead_purgatory",
+        "grave_of_saints"
+      ]
     },
     {
       "id": "cov_clangorous",
       "name": "Clangorous Covenant",
-      "beschreibung": "Den klirrenden Bund entdecken (Glockenhüter).",
+      "beschreibung": "Den klirrenden Bund entdecken (Bell Keepers).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -271,13 +324,17 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Glockenhüter-Siegel. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Mit dem Zwerg in Glockenturm Luna (Verlorene Bastille, Pharros-Schloss unter dem Leuchtfeuer nach den Ruinenwächtern) oder Glockenturm Sol (Eisenfestung, nach der kleinen Brücke mit den zwei Schildkrötenrittern links, Pharros-Schloss) reden. Du brauchst einen Pharros-Sperrstein."
+      "erkennungHinweis": "Erkannt über das Bell Keeper's Seal. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Mit dem Zwerg in Belfry Luna (Lost Bastille, Pharros-Schloss unter dem Leuchtfeuer nach den Ruin Sentinels) oder Belfry Sol (Iron Keep, nach der kleinen Brücke mit den zwei Schildkrötenrittern links, Pharros-Schloss) reden. Du brauchst einen Pharros' Lockstone.",
+      "gebiete": [
+        "belfry_luna",
+        "belfry_sol"
+      ]
     },
     {
       "id": "cov_gnawing",
       "name": "Gnawing Covenant",
-      "beschreibung": "Den Bund der Nager entdecken (Rattenkönig).",
+      "beschreibung": "Den Bund der Nager entdecken (Rat King).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -286,13 +343,17 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Rattenwappen. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Mit dem Rattenkönig reden: im Grab der Heiligen nach der Königlichen Rattenvorhut oder in den Pharros-Toren nach der Königlichen Rattenautorität. Ränge: 10 / 20 / 35 Rattenschwänze. Jeder der beiden Rattenbosse gibt einen."
+      "erkennungHinweis": "Erkannt über das Crest of the Rat. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Mit dem Rat King reden: im Grave of Saints nach der Royal Rat Vanguard oder in den Doors of Pharros nach der Royal Rat Authority. Ränge: 10 / 20 / 35 Rat Tails. Jeder der beiden Rattenbosse gibt einen.",
+      "gebiete": [
+        "grave_of_saints",
+        "doors_of_pharros"
+      ]
     },
     {
       "id": "cov_fittest",
       "name": "Covenant of the Fittest",
-      "beschreibung": "Den Bund der Stärksten entdecken (Gemeinschaft der Champions).",
+      "beschreibung": "Den Bund der Stärksten entdecken (Company of Champions).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -301,16 +362,19 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Bezwingersiegel (evtl. erst Rang-3-Belohnung, dann bitte selbst abhaken).",
-      "guide": "In Majula auf dem Weg zu Heides Flammenturm rechts die Klippe entlang zur großen Steintafel und dort knien. Das Spiel fragt mehrmals nach. Für das Achievement musst du bis zum letzten Dialog gehen. Achtung: Mitglieder spielen auf erhöhtem Schwierigkeitsgrad. Austreten macht es wieder normal.",
+      "erkennungHinweis": "Erkannt über das Vanquisher's Seal (evtl. erst Rang-3-Belohnung, dann bitte selbst abhaken).",
+      "guide": "In Majula auf dem Weg zu Heide's Tower of Flame rechts die Klippe entlang zur großen Steintafel und dort knien. Das Spiel fragt mehrmals nach. Für das Achievement musst du bis zum letzten Dialog gehen. Achtung: Mitglieder spielen auf erhöhtem Schwierigkeitsgrad. Austreten macht es wieder normal.",
       "unsicher": [
         "Welche Seal-Ringe man beim Beitritt bekommt und welche erst als Rangbelohnung, ist noch nicht geprüft."
+      ],
+      "gebiete": [
+        "majula"
       ]
     },
     {
       "id": "cov_abysmal",
       "name": "Abysmal Covenant",
-      "beschreibung": "Den Bund des Abgrunds entdecken (Pilger der Dunkelheit).",
+      "beschreibung": "Den Bund des Abgrunds entdecken (Pilgrims of Dark).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -319,13 +383,19 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Abgrundsiegel. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Taucher Grandahl an allen drei Orten finden: (1) Schwarze Schlucht: Tür am Rand, Schlüssel von den zwei Riesen weiter unten. (2) Schattenwald: am Hang zu Najka vorbei, kleine Grube. (3) Schloss Drangleic: großer Raum nach dem ersten Leuchtfeuer, Tür hinten links (Statuen-Gegner daneben töten). Beim dritten Mal kannst du beitreten. Rang 3 = Dunkellauerer besiegen (Belohnung: 'Klimax' für Master of Hexes)."
+      "erkennungHinweis": "Erkannt über das Abyss Seal. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Darkdiver Grandahl an allen drei Orten finden: (1) Black Gulch: Tür am Rand, Schlüssel von den zwei Riesen weiter unten. (2) Shaded Woods: am Hang zu Najka vorbei, kleine Grube. (3) Drangleic Castle: großer Raum nach dem ersten Leuchtfeuer, Tür hinten links (Statuen-Gegner daneben töten). Beim dritten Mal kannst du beitreten. Rang 3 = Darklurker besiegen (Belohnung: 'Climax' für Master of Hexes).",
+      "gebiete": [
+        "black_gulch",
+        "shaded_woods",
+        "drangleic_castle",
+        "dark_chasm"
+      ]
     },
     {
       "id": "cov_ancients",
       "name": "Covenant of Ancients",
-      "beschreibung": "Einen uralten Bund entdecken (Drachenüberreste).",
+      "beschreibung": "Einen uralten Bund entdecken (Dragon Remnants).",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -334,8 +404,12 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über das Uralte Drachensiegel. Nur entdeckt? Dann selbst abhaken.",
-      "guide": "Im Drachenschrein das 'Versteinerte Ei' finden und Magerold von Lanafir in der Eisenfestung geben, dann kannst du beitreten. Ränge: 10 / 20 / 30 Drachenschuppen."
+      "erkennungHinweis": "Erkannt über das Ancient Dragon Seal. Nur entdeckt? Dann selbst abhaken.",
+      "guide": "Im Dragon Shrine das 'Petrified Egg' finden und Magerold of Lanafir in der Iron Keep geben, dann kannst du beitreten. Ränge: 10 / 20 / 30 Dragon Scales.",
+      "gebiete": [
+        "dragon_shrine",
+        "iron_keep"
+      ]
     },
     {
       "id": "selfless_giver",
@@ -347,7 +421,7 @@
       "sicherheit": "unsicher",
       "verpassbar": false,
       "erkennungHinweis": "Bundrang im Spielstand noch nicht gefunden.",
-      "guide": "Einen beliebigen Bund auf Rang 3 bringen. Empfehlung für offline: Erben der Sonne mit 30 Sonnenlicht-Medaillen. Das gibt gleich den Sonnenlichtspeer für Master of Miracles. Die Medaillen kann der Item-Geber liefern (kommt in Schritt 4). Alternativ: Rattenkönig (35 Rattenschwänze), Drachenüberreste (30 Drachenschuppen), Champions (50 Ehrfurchtsteine) oder Pilger der Dunkelheit (Dunkellauerer besiegen, ganz ohne Items).",
+      "guide": "Einen beliebigen Bund auf Rang 3 bringen. Empfehlung für offline: Heirs of the Sun mit 30 Sunlight Medals. Das gibt gleich den Sunlight Spear für Master of Miracles. Die Medaillen kann der Item-Geber liefern (kommt in Schritt 4). Alternativ: Rat King (35 Rat Tails), Dragon Remnants (30 Dragon Scales), Company of Champions (50 Awestones) oder Pilgrims of Dark (Darklurker besiegen, ganz ohne Items).",
       "unsicher": [
         "Genaue Mengen pro Rang laut PS3-Leitfaden, in SotFS bitte im Spiel prüfen."
       ]
@@ -355,7 +429,7 @@
     {
       "id": "moonlight_greatsword",
       "name": "Moonlight Greatsword",
-      "beschreibung": "Die Ausrüstung von Benhart von Jugo erben.",
+      "beschreibung": "Die Ausrüstung von Benhart of Jugo erben.",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -365,11 +439,11 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "erkennungHinweis": "Erkannt über Benharts Rüstung/Helm im Inventar.",
+      "erkennungHinweis": "Erkannt über Benhart's Armor/Benhart's Knight Helm im Inventar.",
       "guide": "Benhart in 3 Bosskämpfe beschwören, er muss überleben. Wiederholungen desselben Bosses zählen auch. Danach mit ihm reden, er gibt dir seine Ausrüstung. Ihn nicht angreifen. Vorher immer erst mit ihm reden, dann erscheint sein Beschwörungszeichen.",
       "unsicher": [
-        "Die Beschwörungsorte stammen aus der Originalversion (Prowling Magnus, Spiegelritter, Riesenfürst, Thronwächter). In SotFS sind einige NPC-Zeichen versetzt, bitte prüfen.",
-        "Wo er dir am Ende die Ausrüstung gibt (Originalversion: Erinnerung an Orro), bitte prüfen."
+        "Die Beschwörungsorte stammen aus der Originalversion (Prowling Magnus, Looking Glass Knight, Giant Lord, Thronwächter). In SotFS sind einige NPC-Zeichen versetzt, bitte prüfen.",
+        "Wo er dir am Ende die Ausrüstung gibt (Originalversion: Memory of Orro), bitte prüfen."
       ],
       "warnungen": [
         {
@@ -380,16 +454,26 @@
             "GiantLord",
             "Nashandra"
           ],
-          "text": "Bevor du {boss} besiegst: Benhart beschwören (vorher mit ihm reden, sein Zeichen liegt nahe dem Nebeltor). Er muss 3 Bosskämpfe überleben. Thronwächter/-verteidiger zählen nicht, Nashandra schon.",
-          "folge": "Alle Bosse mit Benhart-Zeichen sind besiegt. Nur noch über einen Leuchtfeuer-Asket (Boss wiederholen) oder den DLC-Boss Elana machbar."
+          "text": "Bevor du {boss} besiegst: Benhart beschwören (vorher mit ihm reden, sein Zeichen liegt nahe dem Nebeltor). Er muss 3 Bosskämpfe überleben. Throne Watcher und Throne Defender zählen nicht, Nashandra schon.",
+          "folge": "Alle Bosse mit Benhart-Zeichen sind besiegt. Nur noch über einen Bonfire Ascetic (Boss wiederholen) oder den DLC-Boss Elana machbar."
         }
       ],
-      "ngPlus": "In NG+ komplett nachholbar."
+      "ngPlus": "In NG+ komplett nachholbar.",
+      "gebiete": [
+        "shaded_woods",
+        "brightstone_cove",
+        "kings_passage",
+        "memory_orro",
+        "memory_jeigh",
+        "drangleic_castle",
+        "throne_of_want",
+        "dragons_rest"
+      ]
     },
     {
       "id": "lucatiel",
       "name": "Lucatiel",
-      "beschreibung": "Die Ausrüstung von Lucatiel von Mirrah erben.",
+      "beschreibung": "Die Ausrüstung von Lucatiel of Mirrah erben.",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -399,8 +483,8 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "erkennungHinweis": "Erkannt über Lucatiels Weste/Maske im Inventar.",
-      "guide": "Lucatiel an allen Treffpunkten ansprechen und sie in 3 Bosskämpfe beschwören. Sie muss überleben. Danach in Aldias Festung am ersten Leuchtfeuer mit ihr reden. Originalversion: Flexibler Wächter (Niemandswerft), Schmelzofendämon (Eisenfestung), Der Verfaulte (Schwarze Schlucht), Verlorene Sünderin. Stirbt sie in einem Kampf, ist das Achievement in diesem Durchgang weg.",
+      "erkennungHinweis": "Erkannt über Lucatiel's Vest/Lucatiel's Mask im Inventar.",
+      "guide": "Lucatiel an allen Treffpunkten ansprechen und sie in 3 Bosskämpfe beschwören. Sie muss überleben. Danach in Aldia's Keep am ersten Leuchtfeuer mit ihr reden. Originalversion: Flexile Sentry (No-Man's Wharf), Smelter Demon (Iron Keep), The Rotten (Black Gulch), Lost Sinner. Stirbt sie in einem Kampf, ist das Achievement in diesem Durchgang weg.",
       "unsicher": [
         "Treffpunkte und Beschwörungszeichen in SotFS teils anders als im Original, bitte prüfen."
       ],
@@ -414,22 +498,31 @@
             "LostSinner"
           ],
           "text": "Bevor du {boss} besiegst: Lucatiel beschwören (vorher an ihren Treffpunkten ansprechen, ihr Zeichen liegt nahe dem Boss). Sie muss 3 Bosskämpfe überleben.",
-          "folge": "Alle Bosse mit Lucatiel-Zeichen sind besiegt. Nur noch machbar, wenn du einen Boss mit einem Leuchtfeuer-Asket wiederholst (am einfachsten: Der Verfaulte)."
+          "folge": "Alle Bosse mit Lucatiel-Zeichen sind besiegt. Nur noch machbar, wenn du einen Boss mit einem Bonfire Ascetic wiederholst (am einfachsten: The Rotten)."
         },
         {
           "typ": "gebiet",
           "gebiete": [
-            "0x0A0F0000"
+            "aldias_keep"
           ],
-          "text": "Aldias Festung: Lucatiel am Leuchtfeuer 'Vorgarten' erst ansprechen, wenn sie 3 Bosskämpfe überlebt hat. Sprichst du sie vorher an, verschwindet sie."
+          "text": "Aldia's Keep: Lucatiel am Leuchtfeuer Foregarden erst ansprechen, wenn sie 3 Bosskämpfe überlebt hat. Sprichst du sie vorher an, verschwindet sie."
         }
       ],
-      "ngPlus": "In NG+ komplett nachholbar."
+      "ngPlus": "In NG+ komplett nachholbar.",
+      "gebiete": [
+        "no_mans_wharf",
+        "lost_bastille",
+        "earthen_peak",
+        "black_gulch",
+        "iron_keep",
+        "sinners_rise",
+        "aldias_keep"
+      ]
     },
     {
       "id": "vengarl",
       "name": "Reflections on Disembodiment",
-      "beschreibung": "Die Ausrüstung von Vengarls Kopf erben.",
+      "beschreibung": "Die Ausrüstung von Head of Vengarl erben.",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -438,8 +531,8 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "erkennungHinweis": "Erkannt über Vengarls Helm. Die Rüstung bekommt man vermutlich auch, wenn man seinen Körper tötet, deshalb zählt hier nur der Helm (bitte prüfen).",
-      "guide": "Vengarls Kopf liegt im Schattenwald: im dichten Nebel links halten bis zu einer Lichtung, im Schutt. So lange mit ihm reden, bis er dir seinen Helm gibt. Seinen Körper (läuft im Wald herum) darfst du töten, den Kopf nicht.",
+      "erkennungHinweis": "Erkannt über Vengarl's Helm. Die Rüstung bekommt man vermutlich auch, wenn man seinen Körper tötet, deshalb zählt hier nur der Helm (bitte prüfen).",
+      "guide": "Head of Vengarl liegt im Shaded Woods: im dichten Nebel links halten bis zu einer Lichtung, im Schutt. So lange mit ihm reden, bis er dir seinen Helm gibt. Seinen Körper (läuft im Wald herum) darfst du töten, den Kopf nicht.",
       "unsicher": [
         "Ob Helm oder Rüstung das sichere Zeichen für dieses Achievement ist, bitte prüfen."
       ],
@@ -447,28 +540,35 @@
         {
           "typ": "gebiet",
           "gebiete": [
-            "0x0A1F0000"
+            "shaded_woods"
           ],
-          "text": "Schattenwald: Vengarls Kopf (im Nebel links, im Schutt) nicht angreifen. Den kopflosen Körper darfst du töten."
+          "text": "Shaded Woods: Head of Vengarl (im Nebel links, im Schutt) nicht angreifen. Den kopflosen Körper darfst du töten."
         }
       ],
-      "ngPlus": "In NG+ nachholbar."
+      "ngPlus": "In NG+ nachholbar.",
+      "gebiete": [
+        "shaded_woods"
+      ]
     },
     {
       "id": "drummond",
       "name": "Holder of the Fort",
-      "beschreibung": "Die Ausrüstung von Hauptmann Drummond erben.",
+      "beschreibung": "Die Ausrüstung von Captain Drummond erben.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "guide": "Hauptmann Drummond steht in der Erinnerung an Vammar (der Riese beim Schildkrötenritter und den Sprengfässern im Wald der gefallenen Riesen, braucht das Aschennebelherz). Nachdem du den Riesenfürsten in der Erinnerung an Jeigh besiegt hast, mit ihm reden. Er gibt dir seine Ausrüstung."
+      "guide": "Captain Drummond steht in der Memory of Vammar (der Riese beim Schildkrötenritter und den Sprengfässern im Forest of Fallen Giants, braucht das Ashen Mist Heart). Nachdem du den Giant Lord in der Memory of Jeigh besiegt hast, mit ihm reden. Er gibt dir seine Ausrüstung.",
+      "gebiete": [
+        "memory_vammar",
+        "memory_jeigh"
+      ]
     },
     {
       "id": "mcduff",
       "name": "Smith for Life",
-      "beschreibung": "Die Ausrüstung von McDuff mit der ruhigen Hand erben.",
+      "beschreibung": "Die Ausrüstung von Steady Hand McDuff erben.",
       "bedingung": {
         "typ": "item",
         "ids": [
@@ -477,36 +577,48 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "erkennungHinweis": "Erkannt über den Schmiedehammer (könnte auch anders ins Inventar kommen, bitte prüfen).",
-      "guide": "McDuff ist in der Verlorenen Bastille. Seine Werkstatt öffnest du entweder mit dem Bastille-Schlüssel oder indem du beim Turm der Ruinenwächter ein Fass die Treppe runterrollst und an der rissigen Wand explodieren lässt. Er braucht die 'Matte Glut' aus der Eisenfestung (Bereich vor dem Schmelzofendämon, unter dem Scharfschützen). Dann insgesamt ca. 15.000 Seelen bei ihm für Verbesserungen ausgeben (Kaufen zählt nicht) und mit ihm reden.",
+      "erkennungHinweis": "Erkannt über den Blacksmith's Hammer (könnte auch anders ins Inventar kommen, bitte prüfen).",
+      "guide": "McDuff ist in der Lost Bastille. Seine Werkstatt öffnest du entweder mit dem Bastille Key oder indem du beim Turm der Ruin Sentinels ein Fass die Treppe runterrollst und an der rissigen Wand explodieren lässt. Er braucht die 'Dull Ember' aus der Iron Keep (Bereich vor dem Smelter Demon, unter dem Scharfschützen). Dann insgesamt ca. 15.000 Seelen bei ihm für Verbesserungen ausgeben (Kaufen zählt nicht) und mit ihm reden.",
       "unsicher": [
         "Die 15.000 Seelen sind ein Richtwert aus der Originalversion."
       ],
-      "ngPlus": "In NG+ nachholbar."
+      "ngPlus": "In NG+ nachholbar.",
+      "gebiete": [
+        "lost_bastille",
+        "iron_keep"
+      ]
     },
     {
       "id": "gilligan",
       "name": "Garrulous Miser",
-      "beschreibung": "Die Ausrüstung von Leiterschmied Gilligan erben.",
+      "beschreibung": "Die Ausrüstung von Laddersmith Gilligan erben.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "guide": "Gilligan steht auf der Erdspitze (hinter einem Holztor bei der Windmühle). Nach dem Alten Eisenkönig zieht er nach Majula an die große Grube. Dort für 12.000 Seelen seine beste Leiter kaufen und danach noch einmal mit ihm reden.",
-      "ngPlus": "In NG+ nachholbar."
+      "guide": "Gilligan steht auf der Earthen Peak (hinter einem Holztor bei der Windmühle). Nach dem Old Iron King zieht er nach Majula an die große Grube. Dort für 12.000 Seelen seine beste Leiter kaufen und danach noch einmal mit ihm reden.",
+      "ngPlus": "In NG+ nachholbar.",
+      "gebiete": [
+        "earthen_peak",
+        "majula"
+      ]
     },
     {
       "id": "change_of_clothes",
       "name": "Change of Clothes",
-      "beschreibung": "Rosabeth von Melfia etwas zum Anziehen geben.",
+      "beschreibung": "Rosabeth of Melfia etwas zum Anziehen geben.",
       "bedingung": {
         "typ": "manuell"
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "guide": "Rosabeth ist die Steinstatue vor dem Schalter zum Schattenwald (Schattenruinen). Mit einem 'Duftenden Zweig von Yore' entsteinern, mit ihr reden, bis sie nach Kleidung fragt, und ihr irgendein Kleidungsstück schenken. Das bekommst du nicht zurück, also etwas Unwichtiges nehmen.",
-      "ngPlus": "In NG+ nachholbar."
+      "guide": "Rosabeth ist die Steinstatue vor dem Schalter zum Shaded Woods (Shaded Ruins). Mit einem 'Fragrant Branch of Yore' entsteinern, mit ihr reden, bis sie nach Kleidung fragt, und ihr irgendein Kleidungsstück schenken. Das bekommst du nicht zurück, also etwas Unwichtiges nehmen.",
+      "ngPlus": "In NG+ nachholbar.",
+      "gebiete": [
+        "shaded_woods",
+        "majula"
+      ]
     },
     {
       "id": "gathering_of_exiles",
@@ -517,11 +629,20 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": true,
-      "guide": "Diese NPCs ansprechen, damit sie nach Majula ziehen: Händlerin Melentia (Wald der gefallenen Riesen, 2. Leuchtfeuer), Kartograph Cale (Wald, Höhle nach dem 2. Leuchtfeuer), Carhillion (Niemandswerft, Hafen), Licia von Lindeldt (Heides Flammenturm, nach dem Drachenreiter), Rosabeth (Schattenruinen, mit Duftendem Zweig entsteinern), Gilligan (Erdspitze, kommt sonst nach dem Alten Eisenkönig), Steinhändlerin Chloanne (Erntetal, 1. Leuchtfeuer). Wenn der Letzte angekommen ist, nach Majula gehen. Keinen davon töten.",
+      "guide": "Diese NPCs ansprechen, damit sie nach Majula ziehen: Merchant Hag Melentia (Forest of Fallen Giants, 2. Leuchtfeuer), Cartographer Cale (Wald, Höhle nach dem 2. Leuchtfeuer), Carhillion (No-Man's Wharf, Hafen), Licia of Lindeldt (Heide's Tower of Flame, nach dem Dragonrider), Rosabeth (Shaded Ruins, mit Fragrant Branch of Yore entsteinern), Gilligan (Earthen Peak, kommt sonst nach dem Old Iron King), Stone Trader Chloanne (Harvest Valley, 1. Leuchtfeuer). Wenn der Letzte angekommen ist, nach Majula gehen. Keinen davon töten.",
       "unsicher": [
         "Licias Fundort und die Bedingungen einzelner Umzüge können in SotFS abweichen."
       ],
-      "ngPlus": "In NG+ nachholbar."
+      "ngPlus": "In NG+ nachholbar.",
+      "gebiete": [
+        "majula",
+        "forest",
+        "no_mans_wharf",
+        "heides_tower",
+        "shaded_woods",
+        "earthen_peak",
+        "harvest_valley"
+      ]
     },
     {
       "id": "master_sorcery",
@@ -534,7 +655,7 @@
       "sicherheit": "sicher",
       "verpassbar": true,
       "erkennungHinweis": "Zählt die Zauber im Inventar gegen die Liste in gamedata.json (31 inkl. DLC).",
-      "guide": "Händler: Carhillion, Melentia, Magerold, Straid, Ornifex, Agdayne, Grandahl. Fundorte u. a. Wald der gefallenen Riesen, Erdspitze, Schattenwald, Schrein von Amana, Jägerdickicht, Schloss Drangleic, Aldias Festung, Lichtsteinbucht, Bastille, Erntetal, Schrein des Winters, Drachenschrein. Boss-Seelen bei Straid tauschen: Ruinenwächter → Schwerer zielsuchender Seelenpfeil, Najka → Seelenregen. Navlaans Aufträge geben 'Magie entfesseln' (für die Feder nicht die Smaragd-Herold töten, sie gibt sie dir in der Drachenhorst). 'Versteckte Waffe' = Glockenhüter Rang 2. DLC: Seelen fokussieren (Shulva), Seelenblitz (Eleum Loyce). Kristallseelenspeer gibt es erst in NG+ (Alter Bleichdrache-Seele bei Straid).",
+      "guide": "Händler: Carhillion, Melentia, Magerold, Straid, Ornifex, Agdayne, Grandahl. Fundorte u. a. Forest of Fallen Giants, Earthen Peak, Shaded Woods, Shrine of Amana, Huntsman's Copse, Drangleic Castle, Aldia's Keep, Brightstone Cove Tseldora, Lost Bastille, Harvest Valley, Shrine of Winter, Dragon Shrine. Boss-Seelen bei Straid tauschen: Ruin Sentinels → Heavy Homing Soul Arrow, Najka → Soul Shower. Navlaans Aufträge geben 'Unleash Magic' (für die Feder nicht die Emerald Herald töten, sie gibt sie dir in der Dragon Aerie). 'Hidden Weapon' = Bell Keepers Rang 2. DLC: Focus Souls (Shulva), Soul Flash (Eleum Loyce). Crystal Soul Spear gibt es erst in NG+ (Old Paledrake Soul bei Straid).",
       "unsicher": [
         "Die deutschen Zaubernamen sind eigene Übersetzungen.",
         "Navlaan NIE aus seiner Zelle befreien (Hebel mit 'nicht ziehen'), sonst endet seine Quest."
@@ -548,7 +669,7 @@
           "seele": "0x03D15350",
           "zauber": "0x01D9F020",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         },
         {
@@ -559,18 +680,18 @@
           "seele": "0x03D2D9F0",
           "zauber": "0x01DB0190",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         },
         {
           "typ": "gebiet",
           "gebiete": [
-            "0x0A0F0000"
+            "aldias_keep"
           ],
-          "text": "Aldias Festung: Den Hebel mit den Nachrichten 'nicht ziehen' NICHT ziehen, sonst ist Navlaans Quest (mit Zauber-Belohnungen) vorbei. Seine Ziele musst du nicht töten, die Items gibt es auch anders."
+          "text": "Aldia's Keep: Den Hebel mit den Nachrichten 'nicht ziehen' NICHT ziehen, sonst ist Navlaans Quest (mit Zauber-Belohnungen) vorbei. Seine Ziele musst du nicht töten, die Items gibt es auch anders."
         }
       ],
-      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Kristallseelenspeer gibt es ohnehin erst in NG+."
+      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Crystal Soul Spear gibt es ohnehin erst in NG+."
     },
     {
       "id": "master_miracles",
@@ -583,7 +704,7 @@
       "sicherheit": "sicher",
       "verpassbar": true,
       "erkennungHinweis": "Zählt die Zauber im Inventar gegen die Liste in gamedata.json (28 inkl. DLC).",
-      "guide": "Händler: Licia, Cromwell, Straid, Targray, Felkin, Vengarls Kopf, Agdayne, Chloanne, Wellager. Besonderes: Linderndes Sonnenlicht = Licia mit dem 'Zerdrückten Augapfel' (Untotengruft) überfallen. Sonnenlichtspeer = Erben der Sonne Rang 3. Heiliger Eid = Seele von Velstadt bei Straid. DLC: Verleugnung (Drachenheiligtum, Shulva), Splitternder Blitzspeer (Eleum Loyce, Leiter nur mit dem Auge der Priesterin sichtbar). Erst in NG+ / NG++: Blendender Blitz (Alter-König-Seele, NG+), Zorn der Götter und Üppiges Sonnenlicht (Wellager beim dritten Besuch, also NG++; alternativ Blaue Wächter Rang 2/3).",
+      "guide": "Händler: Licia, Cromwell, Straid, Targray, Felkin, Head of Vengarl, Agdayne, Chloanne, Wellager. Besonderes: Soothing Sunlight = Licia mit dem 'Crushed Eye Orb' (Undead Crypt) überfallen. Sunlight Spear = Heirs of the Sun Rang 3. Sacred Oath = Soul of Velstadt bei Straid. DLC: Denial (Dragon's Sanctum, Shulva), Splintering Lightning Spear (Eleum Loyce, Leiter nur mit dem Eye of the Priestess sichtbar). Erst in NG+ / NG++: Blinding Bolt (Old King Soul, NG+), Wrath of the Gods und Bountiful Sunlight (Wellager beim dritten Besuch, also NG++; alternativ Blue Sentinels Rang 2/3).",
       "unsicher": [
         "Die deutschen Zaubernamen sind eigene Übersetzungen."
       ],
@@ -596,11 +717,11 @@
           "seele": "0x03D39D40",
           "zauber": "0x01EBCA70",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         }
       ],
-      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Blendender Blitz erst in NG+, Zorn der Götter und Üppiges Sonnenlicht erst in NG++ (oder über Blaue Wächter Rang 2/3)."
+      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Blinding Bolt erst in NG+, Wrath of the Gods und Bountiful Sunlight erst in NG++ (oder über Blue Sentinels Rang 2/3)."
     },
     {
       "id": "master_pyromancy",
@@ -613,7 +734,7 @@
       "sicherheit": "sicher",
       "verpassbar": true,
       "erkennungHinweis": "Zählt die Zauber im Inventar gegen die Liste in gamedata.json (24 inkl. DLC).",
-      "guide": "Händler: Rosabeth (viele Grundzauber), Titchy Gren, Straid, Agdayne. Fundorte u. a. Niemandswerft, Lichtsteinbucht, Schloss Drangleic, Schrein von Amana, Eisenfestung, Jägerdickicht, Glockenturm Sol. Straid-Tausch: Rattenvorhut → Toxischer Nebel, Rattenautorität → Säureschwall. 'Verbotene Sonne' von Navlaan (Sonnenuntergangsstab: Felkin mit je 20 INT und 20 GLA ansprechen statt töten, oder Mimic in Aldias Festung). DLC (Brume-Turm): Feuertanz, Feuerschlange, Aufschrei (Seele von Nadalia aus 12 Fragmenten bei Straid). Erst in NG+: Flammenwaffe (Alte-Hexe-Seele). Erst in NG++ oder Bruderschaft Rang 3: Großer Chaosfeuerball.",
+      "guide": "Händler: Rosabeth (viele Grundzauber), Titchy Gren, Straid, Agdayne. Fundorte u. a. No-Man's Wharf, Brightstone Cove Tseldora, Drangleic Castle, Shrine of Amana, Iron Keep, Huntsman's Copse, Belfry Sol. Straid-Tausch: Royal Rat Vanguard → Toxic Mist, Royal Rat Authority → Acid Surge. 'Forbidden Sun' von Navlaan (Sunset Staff: Felkin mit je 20 INT und 20 GLA ansprechen statt töten, oder Mimic in Aldia's Keep). DLC (Brume Tower): Dance of Fire, Fire Snake, Outcry (Soul of Nadalia aus 12 Fragmenten bei Straid). Erst in NG+: Flame Weapon (Old Witch Soul). Erst in NG++ oder Brotherhood of Blood Rang 3: Great Chaos Fireball.",
       "unsicher": [
         "Die deutschen Zaubernamen sind eigene Übersetzungen."
       ],
@@ -626,7 +747,7 @@
           "seele": "0x03D28BD0",
           "zauber": "0x01F95F00",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         },
         {
@@ -637,18 +758,18 @@
           "seele": "0x03D30100",
           "zauber": "0x01F98610",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         },
         {
           "typ": "gebiet",
           "gebiete": [
-            "0x0A0F0000"
+            "aldias_keep"
           ],
-          "text": "Aldias Festung: Den Hebel mit den Nachrichten 'nicht ziehen' NICHT ziehen, sonst ist Navlaans Quest (mit Zauber-Belohnungen) vorbei. Seine Ziele musst du nicht töten, die Items gibt es auch anders."
+          "text": "Aldia's Keep: Den Hebel mit den Nachrichten 'nicht ziehen' NICHT ziehen, sonst ist Navlaans Quest (mit Zauber-Belohnungen) vorbei. Seine Ziele musst du nicht töten, die Items gibt es auch anders."
         }
       ],
-      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Flammenwaffe erst in NG+, Großer Chaosfeuerball erst in NG++ (oder Bruderschaft Rang 3)."
+      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Flame Weapon erst in NG+, Great Chaos Fireball erst in NG++ (oder Brotherhood of Blood Rang 3)."
     },
     {
       "id": "master_hexes",
@@ -661,7 +782,7 @@
       "sicherheit": "sicher",
       "verpassbar": true,
       "erkennungHinweis": "Zählt die Zauber im Inventar gegen die Liste in gamedata.json (23 inkl. DLC).",
-      "guide": "Händler: Felkin, Straid, Grandahl, Magerold, Chloanne, Cromwell. Fundorte: Kanal, Grab der Heiligen, Pharros-Tore, Schwarze Schlucht. Straid-Tausch: Riesenfürst → Abstoßen, Dunkellauerer → Lebensraub-Feld. Pilger der Dunkelheit Rang 1–3 geben Resonanzseele, Große Resonanzseele, Klimax. DLC: Versprochener Gang des Friedens und Dunkles Großschwert (Shulva), Erinnerung (Brume-Turm), Dunkler Tanz (Eleum Loyce). Erst in NG+: Taubheit (Alter-Toter-Seele bei Straid).",
+      "guide": "Händler: Felkin, Straid, Grandahl, Magerold, Chloanne, Cromwell. Fundorte: The Gutter, Grave of Saints, Doors of Pharros, Black Gulch. Straid-Tausch: Giant Lord → Repel, Darklurker → Lifedrain Patch. Pilgrims of Dark Rang 1–3 geben Resonant Soul, Great Resonant Soul, Climax. DLC: Promised Walk of Peace und Dark Greatsword (Shulva), Recollection (Brume Tower), Dark Dance (Eleum Loyce). Erst in NG+: Numbness (Old Dead One Soul bei Straid).",
       "unsicher": [
         "Die deutschen Zaubernamen sind eigene Übersetzungen."
       ],
@@ -674,7 +795,7 @@
           "seele": "0x03D43980",
           "zauber": "0x02080500",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         },
         {
@@ -685,11 +806,11 @@
           "seele": "0x03D4D5C0",
           "zauber": "0x02174740",
           "text": "Du hast die {seele}: nicht für Seelen benutzen und nicht gegen Waffen tauschen, sondern bei Straid gegen {zauber}.",
-          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Verlorene Bastille, mit Duftendem Zweig entsteinern) gegen {zauber} tauschen.",
+          "kommend": "Nach dem Kampf gegen {boss}: die {seele} aufheben und bei Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern) gegen {zauber} tauschen.",
           "folge": "{boss} ist besiegt, aber weder {seele} noch {zauber} sind im Inventar: Die Seele wurde vermutlich verbraucht. {zauber} gibt es dann erst wieder in NG+."
         }
       ],
-      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Taubheit gibt es erst in NG+."
+      "ngPlus": "Verpasste Zauber gibt es in NG+ wieder. Numbness gibt es erst in NG+."
     },
     {
       "id": "gesture_maestro",
@@ -701,17 +822,28 @@
       "sicherheit": "unsicher",
       "verpassbar": true,
       "erkennungHinweis": "Gesten im Spielstand noch nicht gefunden.",
-      "guide": "8 Gesten hast du von Anfang an. Die übrigen lernst du bei NPCs ('Geste lernen' im Dialog): Saulden (Majula), Targray (Blaue Kathedrale), Straid (Bastille, mit Duftendem Zweig entsteinern), Creighton (Jägerdickicht, hinter verschlossener Tür beim Leuchtfeuer), Sonnenaltar (Erntetal), Gilligan, Benhart (nachdem Rosabeth entsteinert ist, weiter mit ihm reden), Vengarls Kopf, Manskorpion Tark (Schattenwald, mit dem Flüsterring von Shalquoir, nach Najka), Kanzler Wellager (Schloss Drangleic), Agdayne (Untotengruft, ohne brennende Fackel ansprechen), Hauptmann Drummond (Erinnerung an Vammar). Keinen dieser NPCs vorher töten.",
+      "guide": "8 Gesten hast du von Anfang an. Die übrigen lernst du bei NPCs ('Geste lernen' im Dialog): Saulden (Majula), Targray (Cathedral of Blue), Straid (Lost Bastille, mit Fragrant Branch of Yore entsteinern), Creighton (Huntsman's Copse, hinter verschlossener Tür beim Leuchtfeuer), Altar of Sunlight (Harvest Valley), Gilligan, Benhart (nachdem Rosabeth entsteinert ist, weiter mit ihm reden), Head of Vengarl, Manscorpion Tark (Shaded Woods, mit dem Ring of Whispers von Sweet Shalquoir, nach Najka), Chancellor Wellager (Drangleic Castle), Agdayne (Undead Crypt, ohne brennende Fackel ansprechen), Captain Drummond (Memory of Vammar). Keinen dieser NPCs vorher töten.",
       "warnungen": [
         {
           "typ": "gebiet",
           "gebiete": [
-            "0x0A220000"
+            "undead_crypt"
           ],
-          "text": "Untotengruft: Grabwächter Agdayne OHNE brennende Fackel ansprechen und seine Geste lernen. Mit Fackel werden die Wächter feindlich."
+          "text": "Undead Crypt: Grave Warden Agdayne OHNE brennende Fackel ansprechen und seine Geste lernen. Mit Fackel werden die Wächter feindlich."
         }
       ],
-      "ngPlus": "In NG+ nachholbar (getötete NPCs leben dort wieder)."
+      "ngPlus": "In NG+ nachholbar (getötete NPCs leben dort wieder).",
+      "gebiete": [
+        "majula",
+        "cathedral_of_blue",
+        "lost_bastille",
+        "huntsmans_copse",
+        "harvest_valley",
+        "shaded_woods",
+        "drangleic_castle",
+        "undead_crypt",
+        "memory_vammar"
+      ]
     },
     {
       "id": "supreme_weapon",
@@ -723,9 +855,12 @@
       "sicherheit": "unsicher",
       "verpassbar": false,
       "erkennungHinweis": "Verstärkungsstufe im Inventar noch nicht entschlüsselt.",
-      "guide": "Eine normale Waffe auf +10 bringen (Lenigrast in Majula oder McDuff). Dafür nötig: 6 Titanitsplitter, 6 große Titanitsplitter, 6 Titanitbrocken und 1 Titanitplatte. Boss-Waffen gehen nur bis +5 (mit Funkelndem Titanit), zählen wohl auch.",
+      "guide": "Eine normale Waffe auf +10 bringen (Blacksmith Lenigrast in Majula oder McDuff). Dafür nötig: 6 Titanite Shards, 6 Large Titanite Shards, 6 Titanite Chunks und 1 Titanite Slab. Boss-Waffen gehen nur bis +5 (mit Twinkling Titanite), zählen wohl auch.",
       "unsicher": [
         "Ob eine Boss-Waffe auf +5 ebenfalls zählt, bitte prüfen."
+      ],
+      "gebiete": [
+        "majula"
       ]
     },
     {
@@ -737,7 +872,7 @@
       },
       "sicherheit": "unsicher",
       "verpassbar": false,
-      "guide": "Kommt automatisch, wenn alle anderen Achievements freigeschaltet sind. Wegen der NG+/NG++-Zauber realistisch erst im dritten Durchgang, außer du nutzt den Bund-Weg (Bruderschaft / Blaue Wächter Rang 3)."
+      "guide": "Kommt automatisch, wenn alle anderen Achievements freigeschaltet sind. Wegen der NG+/NG++-Zauber realistisch erst im dritten Durchgang, außer du nutzt den Bund-Weg (Brotherhood of Blood / Blue Sentinels Rang 3)."
     }
   ]
 }

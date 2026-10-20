@@ -30,3 +30,31 @@
 .warn-next { -fx-text-fill: #d8c8b8; -fx-font-size: 12px; }
 .badge-missed { -fx-background-color: #8a1f1f; -fx-text-fill: #ffd6d6; }
 .missed-text { -fx-text-fill: #ff9a9a; -fx-font-size: 12px; }
+/* Weltkarte */
+.map-top { -fx-background-color: #24211e; }
+.map-viewport { -fx-background-color: #161412; }
+.map-side { -fx-background-color: #1a1816; }
+.area { -fx-background-radius: 6; -fx-border-radius: 6; -fx-border-width: 1.5; -fx-padding: 4 6; -fx-cursor: hand; }
+.area-visited { -fx-background-color: #3a3229; -fx-border-color: #8a7350; }
+.area-unvisited { -fx-background-color: #22201d; -fx-border-color: #4a443c; -fx-opacity: 0.8; }
+.area-current { -fx-background-color: #5a4520; -fx-border-color: #f0c050; -fx-border-width: 3; }
+.area-dlc { -fx-border-style: segments(6, 4); }
+.area-selected { -fx-effect: dropshadow(gaussian, #6fb0f0, 16, 0.55, 0, 0); }
+.area-name { -fx-font-weight: bold; -fx-font-size: 12px; -fx-text-alignment: center; -fx-alignment: center; }
+.area-sub { -fx-font-size: 10px; -fx-text-fill: #b8ab98; }
+.edge { -fx-stroke: #7a6d5c; -fx-stroke-width: 2.5; }
+.edge-teleport { -fx-stroke: #6f8fb0; -fx-stroke-dash-array: 2 6; }
+.edge-locked { -fx-stroke: #b04040; -fx-stroke-dash-array: 10 6; }
+.edge-arrow { -fx-fill: #7a6d5c; }
+.edge-arrow-locked { -fx-fill: #b04040; }
+.edge-marker { -fx-fill: #3a3229; -fx-stroke: #8a7350; }
+.edge-marker-visited { -fx-fill: #2f3a29; -fx-stroke: #6f8a50; }
+.edge-marker-locked { -fx-fill: #8a1f1f; -fx-stroke: #ff9a9a; }
+.edge-marker-text { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #f0e6d6; }
+.legend-locked { -fx-text-fill: #ff9a9a; }
+.side-title { -fx-font-size: 18px; -fx-font-weight: bold; }
+.side-section { -fx-font-weight: bold; -fx-text-fill: #c9a24a; -fx-padding: 6 0 0 0; }
+.side-current { -fx-text-fill: #f0c050; -fx-font-weight: bold; }
+.done-text { -fx-text-fill: #9fd08a; }
+.locked-text { -fx-text-fill: #ff9a9a; }
+.warn-next-side { -fx-text-fill: #d8c8b8; -fx-font-size: 12px; }
