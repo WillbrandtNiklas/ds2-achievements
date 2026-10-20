@@ -3,6 +3,7 @@ package ds2ach.ui;
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
 import ds2ach.data.Items;
+import ds2ach.data.MapGeo;
 import ds2ach.logic.ItemStatus;
 import ds2ach.data.World;
 import ds2ach.data.World.Area;
@@ -47,6 +48,10 @@ public final class MapWindow {
     private final CheckBox showDlc = new CheckBox("DLC-Gebiete zeigen");
     private final ToggleButton viewMap = new ToggleButton("Karte"), viewDiagram = new ToggleButton("Diagramm");
     private final ParchmentView parchment;
+    private final ToggleButton view3d = new ToggleButton("3D");
+    private final MapGeo geo;
+    private final Map3DView map3d;
+    private BorderPane rootPane;
     private final Items items;
     private final Consumer<Long> onToggleLot;
     private final VBox itemsBox = new VBox(6);
@@ -63,13 +68,15 @@ public final class MapWindow {
     private String selected;
     private double dragX, dragY;
 
-    public MapWindow(AchievementDb db, Warnings warnings, Items items, String stylesheet, Consumer<Long> onToggleLot) {
+    public MapWindow(AchievementDb db, Warnings warnings, Items items, MapGeo geo, String stylesheet, Consumer<Long> onToggleLot) {
         this.db = db;
         this.world = db.world;
         this.warnings = warnings;
         this.items = items;
         this.onToggleLot = onToggleLot;
         this.parchment = new ParchmentView(world);
+        this.geo = geo;
+        this.map3d = new Map3DView(world);
         // Items mit Achievement-Bezug: Bedingungs-Items und alle Zauber der Master-Achievements
         for (Achievement a : db.achievements)
             if (a.bedingung() != null && a.bedingung().ids() != null)
@@ -79,12 +86,19 @@ public final class MapWindow {
         ToggleGroup views = new ToggleGroup();
         viewMap.setToggleGroup(views);
         viewDiagram.setToggleGroup(views);
+        view3d.setToggleGroup(views);
         viewMap.setSelected(true);
         views.selectedToggleProperty().addListener((o, a, b) -> {
             if (b == null) {
                 ((ToggleButton) a).setSelected(true);
                 return;
             }
+            if (b == view3d) {
+                rootPane.setCenter(map3d.node());
+                show3d();
+                return;
+            }
+            rootPane.setCenter(viewport);
             redraw();
             resetView();
         });
@@ -111,7 +125,7 @@ public final class MapWindow {
         });
         Button reset = new Button("Ansicht zurücksetzen");
         reset.setOnAction(e -> resetView());
-        HBox top = new HBox(12, header, spacer(), legend(), viewMap, viewDiagram, showDlc, reset);
+        HBox top = new HBox(12, header, spacer(), legend(), viewMap, viewDiagram, view3d, showDlc, reset);
         top.setAlignment(Pos.CENTER_LEFT);
         top.setPadding(new Insets(8, 12, 8, 12));
         top.getStyleClass().add("map-top");
@@ -156,6 +170,7 @@ public final class MapWindow {
         tabs.setPrefWidth(400);
 
         BorderPane root = new BorderPane(viewport, top, tabs, null, null);
+        rootPane = root;
         Scene scene = new Scene(root, 1500, 900);
         scene.getStylesheets().add(stylesheet);
         stage.setScene(scene);
@@ -187,6 +202,43 @@ public final class MapWindow {
         selected = areaId;
         redraw();
         showDetails();
+        if (view3d.isSelected()) show3d();
+    }
+
+    /** Testhilfe: in der 3D-Ansicht auf den Spieler zoomen. */
+    public void focusPlayer3d() {
+        map3d.focusPlayer();
+    }
+
+    /** Testhilfe: Ansicht "karte", "diagramm" oder "3d" wählen. */
+    public void selectView(String v) {
+        (v.equalsIgnoreCase("3d") ? view3d : v.equalsIgnoreCase("diagramm") ? viewDiagram : viewMap).setSelected(true);
+    }
+
+    /** 3D-Karte des gewählten Gebiets (ohne Auswahl: Karte des Spielers) anzeigen und Marker aktualisieren. */
+    private void show3d() {
+        MapGeo.Map3D m = null;
+        String name = "Keine Karte";
+        Area a = selected == null ? null : world.area(selected);
+        if (a != null && a.karten() != null)
+            for (String k : a.karten()) {
+                var opt = geo == null ? java.util.Optional.<MapGeo.Map3D>empty() : geo.load(AchievementDb.parseId(k));
+                if (opt.isPresent()) {
+                    m = opt.get();
+                    name = world.mapName(m.mapId());
+                    break;
+                }
+            }
+        if (m == null && current != null && geo != null) {
+            var opt = geo.load(current.mapId());
+            if (opt.isPresent()) {
+                m = opt.get();
+                name = world.mapName(m.mapId());
+            }
+        }
+        if (m == null && a != null) name = a.name();
+        map3d.show(m, name);
+        map3d.update(current, items, manualLots, achItemIds);
     }
 
     /** Wird bei jedem neuen Spielstand bzw. jeder Änderung in der Checkliste aufgerufen. */
@@ -202,6 +254,7 @@ public final class MapWindow {
             world.areasOnMap(c.mapId()).stream().findFirst().ifPresent(a -> selected = a.id());
         redraw();
         showDetails();
+        if (view3d.isSelected()) show3d();
     }
 
     /** Ganze Karte ins Fenster einpassen. */

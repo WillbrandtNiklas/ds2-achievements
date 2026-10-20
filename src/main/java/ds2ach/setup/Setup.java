@@ -38,31 +38,37 @@ public final class Setup {
             System.err.println("  setup.bat \"D:\\SteamLibrary\\" + GAME_SUBDIR + "\"");
             System.exit(1);
         }
-        Path lotFile = game.resolve("Param").resolve("ItemLotParam2_Other.param");
-        if (!Files.isRegularFile(lotFile)) {
-            System.err.println("Nicht gefunden: " + lotFile);
-            System.err.println("Die Item-Daten liegen in deiner Installation nicht als lose Datei vor. Das Entpacken aus den");
-            System.err.println("Spielarchiven kommt mit Stufe 3, bis dahin gibt es keine Item-Liste.");
-            System.exit(1);
-        }
-        System.out.println("Spielordner: " + game);
-
         Path out = appDir.resolve("extracted");
         Files.createDirectories(out);
-        Map<Integer, String> itemNames = loadNames(out, "ItemParam.txt");
-        Map<Integer, String> lotNames = loadNames(out, "ItemLotParam2_Other.txt");
+        System.out.println("Spielordner: " + game);
 
-        byte[] data = Files.readAllBytes(lotFile); // nur lesen
-        List<Map<String, Object>> lots = parseLots(data, itemNames, lotNames);
+        // 1) Item-Fundorte aus den losen Params
+        Path lotFile = game.resolve("Param").resolve("ItemLotParam2_Other.param");
+        if (Files.isRegularFile(lotFile)) {
+            Map<Integer, String> itemNames = loadNames(out, "ItemParam.txt");
+            Map<Integer, String> lotNames = loadNames(out, "ItemLotParam2_Other.txt");
+            byte[] data = Files.readAllBytes(lotFile); // nur lesen
+            List<Map<String, Object>> lots = parseLots(data, itemNames, lotNames);
+            Map<String, Object> doc = new LinkedHashMap<>();
+            doc.put("_hinweis", "Erzeugt von setup.bat aus der eigenen Spielinstallation. Nicht ins Repo committen.");
+            doc.put("quelle", Map.of("datei", lotFile.toString(), "groesse", Files.size(lotFile),
+                    "geaendert", Files.getLastModifiedTime(lotFile).toMillis()));
+            doc.put("namen", itemNames.isEmpty() ? "ohne Paramdex (nur IDs)" : "Paramdex " + PARAMDEX);
+            doc.put("lots", lots);
+            new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(out.resolve("items.json").toFile(), doc);
+            System.out.println(lots.size() + " Fundorte nach " + out.resolve("items.json") + " geschrieben.");
+        } else {
+            System.err.println("Nicht gefunden: " + lotFile + " (Item-Liste wird übersprungen)");
+        }
 
-        Map<String, Object> doc = new LinkedHashMap<>();
-        doc.put("_hinweis", "Erzeugt von setup.bat aus der eigenen Spielinstallation. Nicht ins Repo committen.");
-        doc.put("quelle", Map.of("datei", lotFile.toString(), "groesse", Files.size(lotFile),
-                "geaendert", Files.getLastModifiedTime(lotFile).toMillis()));
-        doc.put("namen", itemNames.isEmpty() ? "ohne Paramdex (nur IDs)" : "Paramdex " + PARAMDEX);
-        doc.put("lots", lots);
-        new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValue(out.resolve("items.json").toFile(), doc);
-        System.out.println(lots.size() + " Fundorte nach " + out.resolve("items.json") + " geschrieben.");
+        // 2) Karten (Navigationsnetz, Positionen) aus dem Spielarchiv
+        System.out.println("Lese Karten aus GameDataEbl (nur lesend) ...");
+        try {
+            int n = MapExtractor.extractAll(game, out.resolve("maps"));
+            System.out.println(n + " Karten nach " + out.resolve("maps") + " geschrieben.");
+        } catch (Exception e) {
+            System.err.println("Karten konnten nicht gelesen werden: " + e.getMessage());
+        }
     }
 
     /** DS2-PARAM (64-Bit-Zeilentabelle): Zeilenzahl bei 0x0A, Zeilen ab 0x40 je 24 Bytes (ID, Datenoffset, Namensoffset). */

@@ -50,14 +50,14 @@ class WorldTest {
 
     @Test
     void lockedUntilRequirementMet() {
-        var c = new CharacterSlot(1, "T", 1, 0, 1, 0x0A040000, Map.of(), Map.of(), Set.of(), Set.of(4650), "x");
+        var c = new CharacterSlot(1, "T", 1, 0, 1, 0x0A040000, Map.of(), Map.of(), Set.of(), Set.of(4650), "x", new float[4]);
         WorldStatus s = new WorldStatus(db.world, db.gameData, c);
         assertTrue(s.areas.get("majula").current());
         var toBastille = s.connections.stream().filter(k -> k.connection().von().equals("forest") && k.connection().nach().equals("lost_bastille")).findFirst().orElseThrow();
         assertFalse(toBastille.open());
         assertTrue(toBastille.missing().get(0).contains("Pursuer"));
 
-        var after = new CharacterSlot(1, "T", 1, 0, 1, 0x0A040000, Map.of(), Map.of("Pursuer", 1), Set.of(), Set.of(4650), "x");
+        var after = new CharacterSlot(1, "T", 1, 0, 1, 0x0A040000, Map.of(), Map.of("Pursuer", 1), Set.of(), Set.of(4650), "x", new float[4]);
         assertTrue(new WorldStatus(db.world, db.gameData, after).connections.stream()
                 .filter(k -> k.connection().nach().equals("lost_bastille") && k.connection().von().equals("forest"))
                 .allMatch(WorldStatus.ConnState::open));

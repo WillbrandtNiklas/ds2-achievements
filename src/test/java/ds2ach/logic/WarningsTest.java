@@ -24,7 +24,7 @@ class WarningsTest {
     }
 
     static CharacterSlot slot(int map, Map<Integer, Integer> items, Map<String, Integer> kills) {
-        return new CharacterSlot(1, "Test", 10, 0, 1, map, items, kills, Set.of(), Set.of(), "x");
+        return new CharacterSlot(1, "Test", 10, 0, 1, map, items, kills, Set.of(), Set.of(), "x", new float[4]);
     }
 
     static List<Warnings.Hinweis> hints(CharacterSlot c, String id) {

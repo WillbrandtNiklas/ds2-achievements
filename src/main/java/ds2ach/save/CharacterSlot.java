@@ -26,9 +26,12 @@ public record CharacterSlot(
         Map<String, Integer> bossKills, // unbestätigt: Kandidat für Boss-Zaehler
         Set<Integer> visitedMaps,     // Gebiete mit gespeicherten Weltdaten
         Set<Integer> litBonfires,     // entzündete Leuchtfeuer (IDs wie 4650 = The Far Fire)
-        String fingerprint) {         // Hash über Charakter- und Weltdaten, für "welcher Slot wurde zuletzt gespeichert"
+        String fingerprint,           // Hash über Charakter- und Weltdaten, für "welcher Slot wurde zuletzt gespeichert"
+        float[] position) {           // x, y, z, Blickrichtung beim letzten Speichern (Koordinaten der Karte mapId)
 
     static final int NAME = 0x3C0, LEVEL = 0x38, SOULS = 0x3C, NG = 0x404, MAP = 0x3BC;
+    /** Position beim Speichern (Koordinaten des Kartenlayouts, mit Majula/Forest gegengeprüft), Blickrichtung bei 0x184C. */
+    static final int POS = 0x39C, YAW = 0x184C;
     static final int INV_START = 0x1E2C, INV_END = 0x10E1C, KEY_START = 0x10E30, KEY_END = 0x11DF0;
     static final int MAP_BLOCK_START = 0x20, MAP_BLOCK_SIZE = 0xB10, MAP_BLOCK_COUNT = 42;
     static final int BOSS_BASE = 0x27B14; // unbestätigt
@@ -80,7 +83,8 @@ public record CharacterSlot(
 
         return new CharacterSlot(index, name, level, b.getInt(SOULS), Short.toUnsignedInt(b.getShort(NG)), b.getInt(MAP),
                 Collections.unmodifiableMap(items), Collections.unmodifiableMap(kills),
-                Collections.unmodifiableSet(visited), readBonfires(world), hash(slot, world));
+                Collections.unmodifiableSet(visited), readBonfires(world), hash(slot, world),
+                new float[]{b.getFloat(POS), b.getFloat(POS + 4), b.getFloat(POS + 8), b.getFloat(YAW)});
     }
 
     static Set<Integer> readBonfires(byte[] world) {

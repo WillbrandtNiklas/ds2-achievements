@@ -4,14 +4,14 @@ Checkliste für einen Durchgang in **Dark Souls II: Scholar of the First Sin** (
 **Spielstand**, nicht aus deinen Steam-Achievements. Die App liest nur. Sie verändert weder den Spielstand noch den
 Spielspeicher.
 
-Stand: **Weltkarte Stufe 2** (Pergamentkarte und Items pro Gebiet). Stufe 3 (3D-Karten) und der Item-Geber folgen.
+Stand: **Weltkarte Stufe 3** (3D-Karten mit Spielerposition). Der Item-Geber folgt.
 
 Alle Spielnamen (Gebiete, Bosse, NPCs, Items, Zauber, Bünde) sind englisch wie im Spiel, Erklärungen deutsch.
 
 ## Starten
 
 1. Java 21 oder neuer muss installiert sein (`java -version`).
-2. Einmalig `setup.bat` ausführen: liest die Item-Fundorte aus deiner Spielinstallation (siehe „Setup“).
+2. Einmalig `setup.bat` ausführen: liest Item-Fundorte und Karten aus deiner Spielinstallation (siehe „Setup“).
 3. Doppelklick auf `start.bat`.
 
 Beim ersten Start baut `build.bat` die App automatisch. Dafür wird Maven gesucht: im PATH, in der Umgebungsvariable
@@ -32,8 +32,16 @@ ausführen. Für Änderungen an der JSON-Datei reicht ein Neustart der App.
 - Ändert sich die Spieldatei (z. B. durch ein Update oder einen Mod), weist die App darauf hin. Dann `setup.bat` neu
   ausführen.
 
-Liegen die Params in deiner Installation nicht als lose Dateien vor, bricht das Setup mit einem Hinweis ab. Das
-Entpacken aus den Spielarchiven gehört zu Stufe 3.
+Liegen die Params in deiner Installation nicht als lose Dateien vor, wird die Item-Liste übersprungen.
+
+**Karten (für die 3D-Ansicht):** Danach liest das Setup aus dem Spielarchiv `GameDataEbl.bdt` pro Karte das
+Kartenlayout (`.msb`), das Navigationsnetz (`.ngp`) und zwei Params (Objekt-Instanzen, Event-Bereiche):
+- Der Archiv-Index (`.bhd`) ist RSA-verschlüsselt. Entschlüsselt wird mit dem öffentlichen Schlüssel
+  `GameDataKeyCode.pem` aus dem Spielordner. Die Dateien selbst sind teilweise AES-verschlüsselt, die Schlüssel stehen
+  im Index. Das Format ist nachgebaut nach den Open-Source-Projekten UXM und SoulsFormats.
+- Es wird nur gelesen, im Spielordner wird nichts entpackt oder verändert.
+- Ergebnis sind 28 Dateien `extracted/maps/mAA_BB.json` (zusammen ca. 4 MB) mit begehbarer Fläche, Leuchtfeuern,
+  Item-Fundorten und Gebietsübergängen samt Positionen. Das dauert etwa eine Sekunde.
 
 ## Spielstand
 
@@ -97,6 +105,25 @@ Alle Gebiets- und Verbindungsdaten stehen in `data/world.json` und sind frei edi
 Bosse, Voraussetzungen). Unsichere Einträge sind dort mit `unsicher` markiert und erscheinen in der App orange als
 „Bitte prüfen“.
 
+## 3D-Ansicht
+
+Im Kartenfenster schaltet **3D** auf die Karte des gewählten Gebiets um, ohne Auswahl auf die Karte, auf der du stehst.
+
+- **Geometrie:** das Navigationsnetz des Spiels, also alle begehbaren Flächen, nach Höhe eingefärbt (tief = grün,
+  hoch = hell). Wände und Gebäude fehlen, das ist ein „3D-Grundriss“ der Wege.
+- **Marker:**
+  - Items: grün = eingesammelt, orange = offen, blau = unbekannt. Würfel = liegendes Item, breiter Kasten = Truhe,
+    goldener Ring = Achievement-relevant.
+  - Leuchtfeuer: Flamme, leuchtend und mit Licht, wenn entzündet.
+  - Lila Säulen: Übergänge zu anderen Gebieten.
+- **Spieler:** cyanfarbene Figur mit Blickrichtung und hohem Lichtstrahl, an der Position aus dem Spielstand.
+- **Steuerung:** Ziehen dreht, rechte Maustaste oder Shift+Ziehen verschiebt, Mausrad zoomt. Dazu die Knöpfe
+  „Schräg“, „Draufsicht“, „Ganze Karte“ und „Zum Spieler“. Ein Klick auf einen Marker zeigt Details.
+
+**Wie „live“ ist die Spielerposition?** Sie kommt aus dem Spielstand, nicht aus dem Spielspeicher (das ist bewusst
+ausgeschlossen). Sie aktualisiert sich also bei jedem Speichern des Spiels: beim Aufheben von Items, an Leuchtfeuern,
+bei Gebietswechseln und regelmäßig zwischendurch. Dazwischen steht die Figur dort, wo zuletzt gespeichert wurde.
+
 ## Items pro Gebiet
 
 Der Reiter **Items** rechts im Kartenfenster listet alle Fundorte des gewählten Gebiets aus `extracted/items.json`.
@@ -151,6 +178,10 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 | Geöffnete Türen und Abkürzungen | noch nicht erkannt. Die Karte zeigt nur, ob du die Voraussetzung erfüllst. |
 | Item-Fundorte | aus deiner Installation (`setup.bat`), vollständig |
 | Aufgehobene Items | eindeutige Items über das Inventar. Verbrauchsgüter noch nicht, da die Aufheben-Flags fehlen. |
+| 3D-Positionen von Items und Leuchtfeuern | aus dem Kartenlayout. Auf allen Karten liegen sie im Median unter 1 m vom Navigationsnetz entfernt. |
+| Spielerposition | aus dem Spielstand (letztes Speichern), mit Majula und Forest gegengeprüft |
+| Gebietsübergänge | Event-Bereiche mit Zielkarte. In Majula vollständig, auf manchen Karten fehlen welche (anders kodiert). |
+| Boss-Arenen in 3D | noch nicht erkannt |
 | NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
 | Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
@@ -193,5 +224,6 @@ java SaveProbe.java diff snapshots\A.sl2 snapshots\B.sl2
 - Leuchtfeuer-IDs und -Namen: [Atvaarks DS2 ID-Liste](https://gist.github.com/Atvaark/69c6dcca10b226895a12)
 - Gebiete, Bosse, Leuchtfeuer und Schlüssel-Items pro Gebiet: [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)
 - Reihenfolge der Boss-Zähler: [FrankvdStam/SoulSplitter](https://github.com/FrankvdStam/SoulSplitter)
+- Archiv- und Kartenformate (BHD5, MSB2, NGP): [UXM](https://github.com/JKAnderson/UXM), [SoulsFormats](https://github.com/JKAnderson/SoulsFormats)
 - Guides (eigene Zusammenfassung): [PSNProfiles Dark Souls II Trophy Guide](https://psnprofiles.com/guide/357-dark-souls-ii-trophy-guide)
 - NPC-Details für SotFS (Lucatiel, Benhart): [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)
