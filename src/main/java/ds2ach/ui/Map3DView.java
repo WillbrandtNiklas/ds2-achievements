@@ -7,24 +7,31 @@ import ds2ach.logic.ItemStatus;
 import ds2ach.save.CharacterSlot;
 import javafx.animation.Animation;
 import javafx.animation.AnimationTimer;
-import javafx.scene.control.ToggleButton;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.PickResult;
 import javafx.animation.ScaleTransition;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
 import javafx.scene.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.PickResult;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
+import javafx.scene.robot.Robot;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Rotate;
 import javafx.scene.transform.Translate;
@@ -35,7 +42,11 @@ import java.util.*;
 /**
  * 3D-Ansicht einer Karte: Navigationsnetz (begehbare Flächen, nach Höhe eingefärbt) mit Markern für Items,
  * Leuchtfeuer, Gebietsübergänge und die Spielerposition aus dem Spielstand.
- * Linke Maustaste ziehen = drehen, rechte = verschieben, Mausrad = zoomen.
+ *
+ * Zwei Steuerungsmodi (Taste F oder Knopf):
+ * - Orbit: links ziehen = drehen, rechts ziehen = verschieben, Mausrad = zum Mauszeiger zoomen, Doppelklick = fokussieren.
+ * - Flug: WASD/QE bewegen, Shift schneller, Maus umsehen (Mausfang per Klick, Esc beendet), Mausrad = Fluggeschwindigkeit.
+ * Kamera: Drehpunkt (target) + Drehung (yaw, pitch) + Abstand (dist). Im Flugmodus ist der Abstand 0, die Kamera steht am Drehpunkt.
  * Koordinaten: Spiel (y nach oben) -> JavaFX (y nach unten), also y gespiegelt.
  */
 public final class Map3DView {
@@ -46,18 +57,22 @@ public final class Map3DView {
     private final PerspectiveCamera cam = new PerspectiveCamera(true);
     private final Rotate yaw = new Rotate(30, Rotate.Y_AXIS), pitch = new Rotate(-45, Rotate.X_AXIS);
     private final Translate target = new Translate(), dist = new Translate(0, 0, -300);
-    private final Label title = new Label(), info = new Label(), hint = new Label();
+    private final Label title = new Label(), info = new Label(), modeLabel = new Label();
+    private final VBox help = new VBox(2);
     private final List<Node> scaled = new ArrayList<>();
-
-    static final String ORBIT_HINT = "Ziehen = drehen · Rechts/Shift ziehen = verschieben · Mausrad = zum Mauszeiger zoomen · "
-            + "Doppelklick = Drehpunkt setzen · WASD = verschieben · Marker anklicken = Details";
-    private final ToggleButton freeBtn = new ToggleButton("Freie Kamera");
+    private final ToggleButton flyBtn = new ToggleButton("Flugmodus (F)"), helpBtn = new ToggleButton("Steuerung (H)");
     private final Set<KeyCode> keys = EnumSet.noneOf(KeyCode.class);
-    private boolean freeCam;
+    private final Robot robot = new Robot();
+
+    /** Kamerabereich, aus der Bounding Box des Gebiets berechnet (siehe applyBounds). */
+    private double minDist = 2, maxDist = 600;
+    private boolean fly, pointerLocked;
+    private double flySpeed = 20; // m/s, aus der Gebietsgröße abgeleitet und per Mausrad änderbar
+    private Point2D lockCenter;
 
     private MapGeo.Map3D map;
     private double[] center = new double[3];
-    private double extent = 200, mx, my;
+    private double extent = 200, height = 30, mx, my;
     private double[] player;
     private double playerYaw;
 
@@ -65,9 +80,7 @@ public final class Map3DView {
         this.world = world;
         Group camRig = new Group(cam);
         camRig.getTransforms().addAll(target, yaw, pitch, dist);
-        cam.setNearClip(0.3);
-        cam.setFarClip(20000);
-        cam.setFieldOfView(45);
+        cam.setFieldOfView(50);
 
         AmbientLight amb = new AmbientLight(Color.rgb(70, 66, 60));
         DirectionalLight sun = new DirectionalLight(Color.rgb(175, 165, 150));
@@ -78,61 +91,215 @@ public final class Map3DView {
         sub.setCamera(cam);
         sub.widthProperty().bind(root.widthProperty());
         sub.heightProperty().bind(root.heightProperty());
-
         sub.setFocusTraversable(true);
-        sub.setOnMousePressed(e -> {
-            mx = e.getSceneX();
-            my = e.getSceneY();
+
+        installMouse();
+        installKeys();
+
+        Button oblique = new Button("Schräg"), top = new Button("Draufsicht"), all = new Button("Ganzes Gebiet"),
+                me = new Button("Zum Spieler"), eyes = new Button("Vom Spieler aus");
+        oblique.setOnAction(e -> {
+            setFly(false);
+            pitch.setAngle(-45);
+        });
+        top.setOnAction(e -> {
+            setFly(false);
+            pitch.setAngle(-89.5);
+        });
+        all.setOnAction(e -> fit());
+        me.setOnAction(e -> focusPlayer());
+        eyes.setOnAction(e -> playerView());
+        flyBtn.setOnAction(e -> setFly(flyBtn.isSelected()));
+        helpBtn.setSelected(true);
+        helpBtn.setOnAction(e -> help.setVisible(helpBtn.isSelected()));
+        for (Node b : List.of(oblique, top, all, me, eyes, flyBtn, helpBtn)) b.setFocusTraversable(false);
+
+        // Overlay: nur die Bedienelemente selbst fangen Mausereignisse. Abstandshalter und Texte sind
+        // mausdurchlässig, sonst landen Ziehen und Mausrad nicht bei der 3D-Fläche (das war der Fehler).
+        Region gap = passThroughSpacer();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox bar = new HBox(6, title, gap, oblique, top, all, me, eyes, flyBtn, helpBtn);
+        bar.setAlignment(Pos.CENTER_LEFT);
+        bar.setPadding(new Insets(8));
+        bar.setPickOnBounds(false);
+        title.getStyleClass().add("map3d-title");
+        title.setMouseTransparent(true);
+        modeLabel.getStyleClass().add("map3d-mode");
+        modeLabel.setMouseTransparent(true);
+        info.getStyleClass().add("map3d-info");
+        info.setWrapText(true);
+        info.setMaxWidth(420);
+        info.setVisible(false);
+        info.setMouseTransparent(true);
+        help.getStyleClass().add("map3d-help");
+        help.setMouseTransparent(true);
+        help.setMaxWidth(Region.USE_PREF_SIZE);
+        Region fill = passThroughSpacer();
+        VBox.setVgrow(fill, Priority.ALWAYS);
+        VBox bottom = new VBox(6, info, help);
+        bottom.setPickOnBounds(false);
+        bottom.setMouseTransparent(true);
+        VBox overlay = new VBox(bar, modeLabel, fill, bottom);
+        overlay.setPadding(new Insets(0, 0, 8, 8));
+        overlay.setPickOnBounds(false);
+        root.getChildren().addAll(sub, overlay);
+        root.setMinSize(0, 0);
+        updateModeTexts();
+    }
+
+    private static Region passThroughSpacer() {
+        Region r = new Region();
+        r.setMouseTransparent(true);
+        r.setPickOnBounds(false);
+        return r;
+    }
+
+    // ---------- Maus ----------
+
+    private void installMouse() {
+        sub.addEventHandler(MouseEvent.MOUSE_PRESSED, e -> {
+            mx = e.getScreenX();
+            my = e.getScreenY();
             sub.requestFocus();
+            if (fly && !pointerLocked && e.getButton() == MouseButton.PRIMARY) lockPointer();
         });
-        sub.setOnMouseDragged(e -> {
-            double dx = e.getSceneX() - mx, dy = e.getSceneY() - my;
-            mx = e.getSceneX();
-            my = e.getSceneY();
-            if (freeCam) { // Umsehen: Kamera dreht sich um sich selbst
-                yaw.setAngle(yaw.getAngle() + dx * 0.25);
-                pitch.setAngle(clamp(pitch.getAngle() - dy * 0.25, -89, 89));
-            } else if (e.isPrimaryButtonDown() && !e.isShiftDown()) { // Orbit um den Drehpunkt
-                yaw.setAngle(yaw.getAngle() + dx * 0.3);
-                pitch.setAngle(clamp(pitch.getAngle() - dy * 0.3, -89.5, 10));
-            } else { // Verschieben in der Bodenebene, abhängig von der Blickrichtung
-                double k = -dist.getZ() / 900, a = Math.toRadians(yaw.getAngle());
-                target.setX(target.getX() - (dx * Math.cos(a) - dy * Math.sin(a)) * k);
-                target.setZ(target.getZ() + (dx * Math.sin(a) + dy * Math.cos(a)) * k);
-            }
-        });
-        sub.setOnScroll(e -> {
-            if (e.getDeltaY() == 0) return;
-            if (freeCam) { // vor/zurück in Blickrichtung
-                move(forward(), Math.signum(e.getDeltaY()) * extent / 40);
+        sub.addEventHandler(MouseEvent.MOUSE_DRAGGED, e -> {
+            if (fly) {
+                if (pointerLocked) look(e.getScreenX(), e.getScreenY());
                 return;
             }
-            double f = e.getDeltaY() > 0 ? 0.85 : 1 / 0.85;
-            double nd = clamp(-dist.getZ() * f, 3, extent * 4);
-            f = nd / -dist.getZ();
-            // Zoom zum Mauszeiger: der Punkt unter der Maus bleibt an seiner Stelle
-            Point3D hit = pickedPoint(e.getPickResult());
-            if (hit != null) {
-                target.setX(hit.getX() + (target.getX() - hit.getX()) * f);
-                target.setY(hit.getY() + (target.getY() - hit.getY()) * f);
-                target.setZ(hit.getZ() + (target.getZ() - hit.getZ()) * f);
+            double dx = e.getScreenX() - mx, dy = e.getScreenY() - my;
+            mx = e.getScreenX();
+            my = e.getScreenY();
+            if (e.getButton() == MouseButton.PRIMARY && !e.isShiftDown()) { // drehen um den Drehpunkt
+                yaw.setAngle(yaw.getAngle() + dx * 0.3);
+                pitch.setAngle(clamp(pitch.getAngle() - dy * 0.3, -89.5, 5));
+            } else if (e.getButton() == MouseButton.SECONDARY || e.getButton() == MouseButton.MIDDLE || e.isShiftDown()) {
+                pan(dx, dy);
             }
-            dist.setZ(-nd);
-            rescaleMarkers();
         });
-        sub.setOnMouseClicked(e -> { // Doppelklick: neuer Drehpunkt (umsehen um diese Stelle)
-            if (e.getClickCount() != 2 || freeCam) return;
-            Point3D hit = pickedPoint(e.getPickResult());
-            if (hit == null) return;
-            target.setX(hit.getX());
-            target.setY(hit.getY());
-            target.setZ(hit.getZ());
-            dist.setZ(-Math.min(-dist.getZ(), 80));
-            rescaleMarkers();
+        sub.addEventHandler(MouseEvent.MOUSE_MOVED, e -> {
+            if (fly && pointerLocked) look(e.getScreenX(), e.getScreenY());
         });
-        sub.setOnKeyPressed(e -> keys.add(e.getCode()));
+        sub.addEventHandler(ScrollEvent.SCROLL, e -> {
+            if (e.getDeltaY() == 0) return;
+            if (fly) {
+                flySpeed = clamp(flySpeed * (e.getDeltaY() > 0 ? 1.25 : 0.8), 1, extent);
+                updateModeTexts();
+            } else {
+                zoomToCursor(e.getX(), e.getY(), e.getPickResult(), e.getDeltaY() > 0);
+            }
+            e.consume();
+        });
+        sub.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            if (fly || e.getButton() != MouseButton.PRIMARY) return;
+            if (e.getClickCount() == 2) {
+                Point3D p = pointUnderCursor(e.getX(), e.getY(), e.getPickResult());
+                if (p != null) focusOn(p, Math.max(minDist * 6, extent * 0.06));
+            } else if (e.isStillSincePress() && pickedPoint(e.getPickResult()) == null) info.setVisible(false);
+        });
+    }
+
+    /** Verschieben in der Bildebene; Geschwindigkeit wächst mit dem Abstand. */
+    private void pan(double dx, double dy) {
+        double k = Math.max(-dist.getZ(), minDist) * 2 * Math.tan(Math.toRadians(cam.getFieldOfView() / 2)) / Math.max(1, sub.getHeight());
+        Point3D right = yaw.deltaTransform(new Point3D(1, 0, 0));
+        Point3D up = yaw.deltaTransform(pitch.deltaTransform(new Point3D(0, 1, 0)));
+        move(right, -dx * k);
+        move(up, -dy * k);
+    }
+
+    /**
+     * Zoomen zum Mauszeiger: Drehpunkt und Abstand so ändern, dass der Punkt unter der Maus an seiner Stelle bleibt.
+     * Am minimalen Abstand schiebt sich die Kamera weiter in Blickrichtung durchs Level, statt stehenzubleiben.
+     */
+    private void zoomToCursor(double sx, double sy, PickResult pr, boolean in) {
+        Point3D p = pointUnderCursor(sx, sy, pr);
+        double d = -dist.getZ(), f = in ? 0.8 : 1.25;
+        double nd = clamp(d * f, minDist, maxDist);
+        if (p != null) {
+            double k = nd / d;
+            target.setX(p.getX() + (target.getX() - p.getX()) * k);
+            target.setY(p.getY() + (target.getY() - p.getY()) * k);
+            target.setZ(p.getZ() + (target.getZ() - p.getZ()) * k);
+        }
+        if (in && d <= minDist * 1.01) move(rayDirection(sx, sy), Math.max(minDist, extent * 0.02)); // durchs Level fliegen
+        dist.setZ(-nd);
+        rescaleMarkers();
+    }
+
+    /** Blickstrahl der Kamera durch einen Bildschirmpunkt der 3D-Fläche (JavaFX-Weltkoordinaten). */
+    private Point3D rayDirection(double sx, double sy) {
+        double h = Math.max(1, sub.getHeight()), w = Math.max(1, sub.getWidth());
+        double t = Math.tan(Math.toRadians(cam.getFieldOfView() / 2)); // Sichtfeld ist vertikal
+        Point3D local = new Point3D((sx - w / 2) / (h / 2) * t, (sy - h / 2) / (h / 2) * t, 1);
+        return yaw.deltaTransform(pitch.deltaTransform(local)).normalize();
+    }
+
+    /** Punkt unter der Maus: getroffenes Netz oder Marker, sonst Schnitt des Blickstrahls mit der Ebene des Drehpunkts. */
+    private Point3D pointUnderCursor(double sx, double sy, PickResult pr) {
+        Point3D hit = pickedPoint(pr);
+        if (hit != null) return hit;
+        Point3D eye = eye(), dir = rayDirection(sx, sy);
+        if (Math.abs(dir.getY()) < 1e-4) return null;
+        double s = (target.getY() - eye.getY()) / dir.getY();
+        return s > 0 ? eye.add(dir.multiply(s)) : null;
+    }
+
+    // ---------- Flugmodus: Mausfang (Pointer Lock) ----------
+
+    /** Mauszeiger ausblenden und nach jeder Bewegung in die Mitte zurücksetzen, so dreht sich der Blick endlos. */
+    private void lockPointer() {
+        Point2D c = sub.localToScreen(sub.getWidth() / 2, sub.getHeight() / 2);
+        if (c == null) return;
+        lockCenter = c;
+        pointerLocked = true;
+        sub.setCursor(Cursor.NONE);
+        robot.mouseMove(c.getX(), c.getY());
+        updateModeTexts();
+    }
+
+    private void unlockPointer() {
+        pointerLocked = false;
+        sub.setCursor(Cursor.DEFAULT);
+        updateModeTexts();
+    }
+
+    private void look(double screenX, double screenY) {
+        if (lockCenter == null) return;
+        double dx = screenX - lockCenter.getX(), dy = screenY - lockCenter.getY();
+        if (dx == 0 && dy == 0) return; // vom Zurücksetzen ausgelöst
+        yaw.setAngle(yaw.getAngle() + dx * 0.15);
+        pitch.setAngle(clamp(pitch.getAngle() - dy * 0.15, -89, 89));
+        robot.mouseMove(lockCenter.getX(), lockCenter.getY());
+    }
+
+    // ---------- Tastatur ----------
+
+    private void installKeys() {
+        sub.setOnKeyPressed(e -> {
+            switch (e.getCode()) {
+                case F -> setFly(!fly);
+                case H -> {
+                    helpBtn.setSelected(!helpBtn.isSelected());
+                    help.setVisible(helpBtn.isSelected());
+                }
+                case ESCAPE -> {
+                    if (pointerLocked) unlockPointer();
+                    else if (fly) setFly(false);
+                }
+                default -> keys.add(e.getCode());
+            }
+            e.consume();
+        });
         sub.setOnKeyReleased(e -> keys.remove(e.getCode()));
-        new AnimationTimer() { // WASD/QE: fliegen (freie Kamera) bzw. Drehpunkt verschieben (Orbit)
+        sub.focusedProperty().addListener((o, was, now) -> {
+            if (!now) {
+                keys.clear();
+                if (pointerLocked) unlockPointer();
+            }
+        });
+        new AnimationTimer() { // Flugmodus: fliegen; Orbit: Drehpunkt in der Ebene verschieben
             long last;
 
             @Override
@@ -140,8 +307,8 @@ public final class Map3DView {
                 double dt = last == 0 ? 0 : Math.min(0.05, (now - last) / 1e9);
                 last = now;
                 if (keys.isEmpty() || dt == 0) return;
-                double speed = (keys.contains(KeyCode.SHIFT) ? 3 : 1) * Math.max(8, extent / 12) * dt;
-                Point3D fwd = freeCam ? forward() : flat(forward()), right = yaw.deltaTransform(new Point3D(1, 0, 0));
+                double speed = (keys.contains(KeyCode.SHIFT) ? 3 : 1) * (fly ? flySpeed : Math.max(minDist * 4, -dist.getZ() * 0.8)) * dt;
+                Point3D fwd = fly ? forward() : flat(forward()), right = yaw.deltaTransform(new Point3D(1, 0, 0));
                 if (keys.contains(KeyCode.W) || keys.contains(KeyCode.UP)) move(fwd, speed);
                 if (keys.contains(KeyCode.S) || keys.contains(KeyCode.DOWN)) move(fwd, -speed);
                 if (keys.contains(KeyCode.D) || keys.contains(KeyCode.RIGHT)) move(right, speed);
@@ -150,45 +317,60 @@ public final class Map3DView {
                 if (keys.contains(KeyCode.Q) || keys.contains(KeyCode.CONTROL)) move(new Point3D(0, 1, 0), speed);
             }
         }.start();
-
-        Button oblique = new Button("Schräg"), top = new Button("Draufsicht"), all = new Button("Ganze Karte"),
-                me = new Button("Zum Spieler"), eyes = new Button("Vom Spieler aus");
-        oblique.setOnAction(e -> {
-            setFreeCam(false);
-            pitch.setAngle(-45);
-        });
-        top.setOnAction(e -> {
-            setFreeCam(false);
-            pitch.setAngle(-89.5);
-        });
-        all.setOnAction(e -> {
-            setFreeCam(false);
-            fit();
-        });
-        me.setOnAction(e -> {
-            setFreeCam(false);
-            focusPlayer();
-        });
-        eyes.setOnAction(e -> playerView());
-        freeBtn.setOnAction(e -> setFreeCam(freeBtn.isSelected()));
-        HBox bar = new HBox(6, title, spacer(), oblique, top, all, me, eyes, freeBtn);
-        bar.setAlignment(Pos.CENTER_LEFT);
-        bar.setPadding(new Insets(8));
-        bar.setPickOnBounds(false);
-        title.getStyleClass().add("map3d-title");
-        info.getStyleClass().add("map3d-info");
-        info.setWrapText(true);
-        info.setMaxWidth(420);
-        info.setVisible(false);
-        hint.getStyleClass().add("map3d-hint");
-        hint.setText(ORBIT_HINT);
-        VBox overlay = new VBox(bar, spacer(), info, hint);
-        VBox.setVgrow(overlay.getChildren().get(1), javafx.scene.layout.Priority.ALWAYS);
-        overlay.setPadding(new Insets(0, 0, 8, 8));
-        overlay.setPickOnBounds(false);
-        root.getChildren().addAll(sub, overlay);
-        root.setMinSize(0, 0);
     }
+
+    // ---------- Modi und Hilfe ----------
+
+    /**
+     * Flugmodus: Kamera steht an der aktuellen Augenposition (Abstand 0) und dreht sich um sich selbst.
+     * Zurück zum Orbit: Drehpunkt vor die Kamera legen, die Ansicht bleibt gleich.
+     */
+    private void setFly(boolean on) {
+        if (on == fly) return;
+        Point3D eye = eye();
+        fly = on;
+        flyBtn.setSelected(on);
+        if (on) {
+            setTarget(eye);
+            dist.setZ(0);
+        } else {
+            if (pointerLocked) unlockPointer();
+            pitch.setAngle(clamp(pitch.getAngle(), -89.5, 5));
+            double d = clamp(extent * 0.15, minDist * 4, maxDist);
+            setTarget(eye.add(forward().multiply(d)));
+            dist.setZ(-d);
+        }
+        keys.clear();
+        sub.requestFocus();
+        updateModeTexts();
+        rescaleMarkers();
+    }
+
+    private void updateModeTexts() {
+        help.getChildren().clear();
+        if (fly) {
+            modeLabel.setText(pointerLocked ? "Flugmodus · Maus gefangen (Esc gibt frei)" : "Flugmodus · in die Ansicht klicken, um die Maus zu fangen");
+            addHelp("Flugmodus", "WASD bewegen · Q/E runter/hoch · Shift schneller",
+                    "Klick fängt die Maus: Maus bewegen = umsehen · Esc gibt sie frei (zweimal Esc = Orbit)",
+                    String.format(Locale.ROOT, "Mausrad = Fluggeschwindigkeit (jetzt %.0f m/s)", flySpeed),
+                    "F = zurück zum Orbit · H = Hilfe aus/ein");
+        } else {
+            modeLabel.setText("Orbit");
+            addHelp("Orbit", "Links ziehen = drehen · Rechts ziehen (oder Shift) = verschieben",
+                    "Mausrad = zum Mauszeiger zoomen · Doppelklick = Punkt/Marker fokussieren",
+                    "WASD = Drehpunkt verschieben · Marker anklicken = Details",
+                    "F = Flugmodus · H = Hilfe aus/ein");
+        }
+    }
+
+    private void addHelp(String head, String... lines) {
+        Label h = new Label(head);
+        h.getStyleClass().add("map3d-help-head");
+        help.getChildren().add(h);
+        for (String l : lines) help.getChildren().add(new Label(l));
+    }
+
+    // ---------- Kamera ----------
 
     public Region node() {
         return root;
@@ -210,7 +392,9 @@ public final class Map3DView {
             return;
         }
         content.getChildren().add(buildMesh(m.netz()));
+        applyBounds();
         fit();
+        Platform.runLater(this::fit); // nochmal, sobald die 3D-Fläche ihre endgültige Größe hat
     }
 
     /** Marker neu setzen: wird bei jedem Spielstand bzw. jeder Änderung aufgerufen. */
@@ -258,15 +442,104 @@ public final class Map3DView {
         rescaleMarkers();
     }
 
-    // ---------- Kamera ----------
+    // ---------- Selbstprüfung (Testhilfe, Startparameter --input-check) ----------
 
-    private void fit() {
-        setFreeCam(false);
-        target.setX(center[0]);
-        target.setY(-center[1]);
-        target.setZ(center[2]);
-        dist.setZ(-extent * 1.15);
-        pitch.setAngle(-50);
+    /** Elemente über der 3D-Fläche, die an einem der 9 Prüfpunkte Mausereignisse abfangen würden (Knöpfe ausgenommen). */
+    public List<String> mouseBlockers() {
+        List<String> out = new ArrayList<>();
+        Node overlay = root.getChildren().get(1);
+        for (double fx : new double[]{0.2, 0.5, 0.8})
+            for (double fy : new double[]{0.25, 0.5, 0.85}) {
+                Point2D p = root.localToScene(root.getWidth() * fx, root.getHeight() * fy);
+                collectBlockers(overlay, p, out);
+            }
+        return out;
+    }
+
+    private static void collectBlockers(Node n, Point2D scenePt, List<String> out) {
+        if (!n.isVisible() || n.isMouseTransparent()) return;
+        if (n instanceof javafx.scene.control.ButtonBase) return; // echte Bedienelemente dürfen klicken
+        boolean catches = n.isPickOnBounds() || (n instanceof Region r && r.getBackground() != null && !r.getBackground().isEmpty());
+        if (catches && n.localToScene(n.getBoundsInLocal()).contains(scenePt)) {
+            String s = n.getClass().getSimpleName() + n.getStyleClass();
+            if (!out.contains(s)) out.add(s);
+        }
+        if (n instanceof Parent p) for (Node c : p.getChildrenUnmodifiable()) collectBlockers(c, scenePt, out);
+    }
+
+    /** Schickt Maus-, Scroll- und Tastenereignisse an die 3D-Fläche und meldet, was sich an der Kamera ändert. */
+    public String inputSelfTest() {
+        StringBuilder r = new StringBuilder();
+        double cx = sub.getWidth() / 2, cy = sub.getHeight() / 2;
+        Point2D s = sub.localToScreen(cx, cy);
+        double d0 = -dist.getZ(), y0 = yaw.getAngle(), p0 = pitch.getAngle();
+        Point3D t0 = new Point3D(target.getX(), target.getY(), target.getZ());
+        sub.fireEvent(new ScrollEvent(ScrollEvent.SCROLL, cx, cy, s.getX(), s.getY(), false, false, false, false, false, false,
+                0, 40, 0, 40, ScrollEvent.HorizontalTextScrollUnits.NONE, 0, ScrollEvent.VerticalTextScrollUnits.NONE, 0, 0, null));
+        r.append(String.format(Locale.ROOT, "Mausrad hinein: Abstand %.1f -> %.1f m (Grenzen %.1f bis %.0f m)%n", d0, -dist.getZ(), minDist, maxDist));
+        Point3D t1 = new Point3D(target.getX(), target.getY(), target.getZ());
+        fireMouse(MouseEvent.MOUSE_PRESSED, MouseButton.PRIMARY, cx, cy, s);
+        fireMouse(MouseEvent.MOUSE_DRAGGED, MouseButton.PRIMARY, cx + 80, cy + 30, s.add(80, 30));
+        r.append(String.format(Locale.ROOT, "Links ziehen: Drehung %.1f° -> %.1f°, Neigung %.1f° -> %.1f°%n", y0, yaw.getAngle(), p0, pitch.getAngle()));
+        Point3D t2 = new Point3D(target.getX(), target.getY(), target.getZ());
+        fireMouse(MouseEvent.MOUSE_PRESSED, MouseButton.SECONDARY, cx, cy, s);
+        fireMouse(MouseEvent.MOUSE_DRAGGED, MouseButton.SECONDARY, cx + 120, cy, s.add(120, 0));
+        r.append(String.format(Locale.ROOT, "Rechts ziehen: Drehpunkt %.1f m verschoben (Zoom zum Cursor hatte ihn %.1f m verschoben)%n",
+                t2.distance(target.getX(), target.getY(), target.getZ()), t0.distance(t1)));
+        setFly(true);
+        Point3D e0 = eye();
+        keys.add(KeyCode.W);
+        long start = System.nanoTime();
+        r.append(String.format(Locale.ROOT, "Flugmodus an, Geschwindigkeit %.1f m/s, W gedrückt ...%n", flySpeed));
+        javafx.animation.PauseTransition wait = new javafx.animation.PauseTransition(Duration.millis(500));
+        wait.setOnFinished(ev -> {
+            keys.clear();
+            System.out.printf(Locale.ROOT, "W %.2f s: Kamera %.1f m geflogen%n", (System.nanoTime() - start) / 1e9, e0.distance(eye()));
+            setFly(false);
+        });
+        wait.play();
+        return r.toString();
+    }
+
+    private void fireMouse(javafx.event.EventType<MouseEvent> type, MouseButton b, double x, double y, Point2D screen) {
+        sub.fireEvent(new MouseEvent(type, x, y, screen.getX(), screen.getY(), b, 1, false, false, false, false,
+                b == MouseButton.PRIMARY, false, b == MouseButton.SECONDARY, false, false, true, null));
+    }
+
+    /** Kamerabereich aus der Bounding Box: kleinster/größter Abstand und Fluggeschwindigkeit passend zur Gebietsgröße. */
+    private void applyBounds() {
+        minDist = Math.max(0.8, extent * 0.004);
+        maxDist = extent * 3;
+        flySpeed = clamp(extent / 15, 4, 80);
+        cam.setNearClip(Math.max(0.1, minDist * 0.1));
+        cam.setFarClip(extent * 12);
+    }
+
+    /** Ganzes Gebiet ins Bild: Abstand so, dass die Bounding Box ins Sichtfeld passt (Höhe und Breite). */
+    public void fit() {
+        setFly(false);
+        setTarget(new Point3D(center[0], -center[1], center[2]));
+        yaw.setAngle(30);
+        pitch.setAngle(-55);
+        double h = Math.max(1, sub.getHeight()), w = Math.max(1, sub.getWidth());
+        double vFov = Math.toRadians(cam.getFieldOfView()), hFov = 2 * Math.atan(Math.tan(vFov / 2) * w / h);
+        double radius = Math.hypot(extent / 2, height / 2) * 1.05; // Kugel um die Box
+        double d = radius / Math.sin(Math.min(vFov, hFov) / 2);
+        dist.setZ(-clamp(d, minDist, maxDist));
+        rescaleMarkers();
+    }
+
+    private void setTarget(Point3D p) {
+        target.setX(p.getX());
+        target.setY(p.getY());
+        target.setZ(p.getZ());
+    }
+
+    /** Orbit auf einen Punkt: Drehpunkt dorthin, Abstand d. */
+    private void focusOn(Point3D p, double d) {
+        setFly(false);
+        setTarget(p);
+        dist.setZ(-clamp(d, minDist, maxDist));
         rescaleMarkers();
     }
 
@@ -286,60 +559,42 @@ public final class Map3DView {
         target.setZ(target.getZ() + dir.getZ() * amount);
     }
 
-    /** Augenposition = Drehpunkt + Abstand entlang der Blickrichtung. */
+    /** Augenposition = Drehpunkt + Abstand entgegen der Blickrichtung. */
     private Point3D eye() {
         return new Point3D(target.getX(), target.getY(), target.getZ()).add(forward().multiply(dist.getZ()));
     }
 
-    /**
-     * Freie Kamera: die Kamera steht an der aktuellen Augenposition und dreht sich um sich selbst (Abstand 0).
-     * Zurück zum Orbit: Drehpunkt 40 m vor die Kamera legen, Ansicht bleibt gleich.
-     */
-    private void setFreeCam(boolean on) {
-        if (on == freeCam) return;
-        Point3D eye = eye();
-        freeCam = on;
-        freeBtn.setSelected(on);
-        if (on) {
-            target.setX(eye.getX());
-            target.setY(eye.getY());
-            target.setZ(eye.getZ());
-            dist.setZ(0);
-            hint.setText("Freie Kamera: Maus ziehen = umsehen · WASD = bewegen · Q/E = runter/hoch · Shift = schneller · Mausrad = vor/zurück");
-        } else {
-            pitch.setAngle(clamp(pitch.getAngle(), -89.5, 10));
-            Point3D t = eye.add(forward().multiply(40));
-            target.setX(t.getX());
-            target.setY(t.getY());
-            target.setZ(t.getZ());
-            dist.setZ(-40);
-            hint.setText(ORBIT_HINT);
-        }
-        sub.requestFocus();
-        rescaleMarkers();
-    }
-
-    /** In Augenhöhe an der gespeicherten Spielerposition stehen und in seine Blickrichtung schauen. */
+    /** Flugmodus in Augenhöhe an der gespeicherten Spielerposition, Blick in seine Richtung. */
     public void playerView() {
         if (player == null) {
-            info.setText("Der Spieler ist nicht auf dieser Karte.");
-            info.setVisible(true);
+            showInfo("Der Spieler ist nicht auf dieser Karte.");
             return;
         }
-        setFreeCam(true);
-        target.setX(player[0]);
-        target.setY(-(player[1] + 1.7));
-        target.setZ(player[2]);
+        setFly(true);
+        setTarget(new Point3D(player[0], -(player[1] + 1.7), player[2]));
         yaw.setAngle(-Math.toDegrees(playerYaw));
         pitch.setAngle(-8);
         rescaleMarkers();
+    }
+
+    public void focusPlayer() {
+        if (player == null) {
+            showInfo("Der Spieler ist nicht auf dieser Karte.");
+            return;
+        }
+        focusOn(new Point3D(player[0], -player[1], player[2]), Math.max(minDist * 10, extent * 0.08));
+    }
+
+    private void showInfo(String text) {
+        info.setText(text);
+        info.setVisible(true);
     }
 
     private static double clamp(double v, double lo, double hi) {
         return Math.max(lo, Math.min(hi, v));
     }
 
-    /** Getroffener Punkt in Weltkoordinaten (Netz oder Marker), null wenn ins Leere geklickt. */
+    /** Getroffener Punkt in Weltkoordinaten (Netz oder Marker), null wenn ins Leere gezeigt. */
     private Point3D pickedPoint(PickResult pr) {
         if (pr == null || pr.getIntersectedNode() == null || pr.getIntersectedPoint() == null) return null;
         Node n = pr.getIntersectedNode();
@@ -351,22 +606,10 @@ public final class Map3DView {
         return n == null ? null : p;
     }
 
-    public void focusPlayer() {
-        if (player == null) {
-            info.setText("Der Spieler ist nicht auf dieser Karte.");
-            info.setVisible(true);
-            return;
-        }
-        target.setX(player[0]);
-        target.setY(-player[1]);
-        target.setZ(player[2]);
-        dist.setZ(-60);
-        rescaleMarkers();
-    }
-
     /** Marker wachsen beim Herauszoomen mit, damit sie sichtbar bleiben. */
     private void rescaleMarkers() {
-        double s = Math.max(0.8, Math.min(6, -dist.getZ() / 90));
+        double d = fly ? flySpeed * 2 : -dist.getZ();
+        double s = clamp(d / 90, 0.8, 6);
         for (Node n : scaled) {
             n.setScaleX(s);
             n.setScaleY(s);
@@ -391,6 +634,7 @@ public final class Map3DView {
         }
         center = new double[]{(min[0] + max[0]) / 2, (minY + maxY) / 2, (min[2] + max[2]) / 2};
         extent = Math.max(60, Math.max(max[0] - min[0], max[2] - min[2]));
+        height = Math.max(5, maxY - minY);
 
         TriangleMesh mesh = new TriangleMesh();
         float[] pts = new float[n * 3], tex = new float[n * 2];
@@ -448,8 +692,9 @@ public final class Map3DView {
         g.setTranslateZ(z);
         Tooltip.install(g, new Tooltip(text));
         g.setOnMouseClicked(e -> {
-            info.setText(text);
-            info.setVisible(true);
+            if (e.getButton() != MouseButton.PRIMARY || fly) return;
+            if (e.getClickCount() == 2) focusOn(new Point3D(x, -y, z), Math.max(minDist * 6, extent * 0.04)); // Marker fokussieren
+            else showInfo(text);
             e.consume();
         });
         g.setCursor(Cursor.HAND);
@@ -546,11 +791,5 @@ public final class Map3DView {
         for (Items.Item i : lot.items())
             parts.add(i.name() + (i.menge() > 1 ? " ×" + i.menge() : "") + (i.stufe() > 0 ? " +" + i.stufe() : ""));
         return (lot.zufall() ? "Zufällig eines davon: " + String.join(" / ", parts) : String.join(", ", parts));
-    }
-
-    private static Region spacer() {
-        Region r = new Region();
-        HBox.setHgrow(r, javafx.scene.layout.Priority.ALWAYS);
-        return r;
     }
 }

@@ -65,3 +65,7 @@
 .map3d-title { -fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #f0e6d6; -fx-background-color: rgba(26,24,22,0.75); -fx-padding: 4 8; -fx-background-radius: 4; }
 .map3d-info { -fx-text-fill: #f0e6d6; -fx-background-color: rgba(26,24,22,0.88); -fx-padding: 8 10; -fx-background-radius: 6; -fx-border-color: #c9a24a; -fx-border-radius: 6; }
 .map3d-hint { -fx-text-fill: #b8ab98; -fx-font-size: 11px; -fx-padding: 4 0 0 0; }
+.map3d-mode { -fx-text-fill: #c9a24a; -fx-font-weight: bold; -fx-padding: 0 0 0 8; }
+.map3d-help { -fx-background-color: rgba(26,24,22,0.85); -fx-padding: 8 10; -fx-background-radius: 6; -fx-border-color: #4a443c; -fx-border-radius: 6; }
+.map3d-help .label { -fx-text-fill: #d8c8b8; -fx-font-size: 12px; }
+.map3d-help .map3d-help-head { -fx-text-fill: #c9a24a; -fx-font-weight: bold; }

@@ -220,6 +220,12 @@ public final class MapWindow {
         map3d.focusPlayer();
     }
 
+    /** Testhilfe: prüft, ob Mausereignisse die 3D-Fläche erreichen und die Kamera bewegen. */
+    public void inputCheck3d() {
+        System.out.println("Abfangende Elemente über der 3D-Fläche: " + map3d.mouseBlockers());
+        System.out.print(map3d.inputSelfTest());
+    }
+
     /** Testhilfe: 3D-Ansicht aus Sicht des Spielers. */
     public void playerView3d() {
         map3d.playerView();

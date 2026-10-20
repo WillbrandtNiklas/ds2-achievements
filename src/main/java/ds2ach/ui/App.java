@@ -112,6 +112,11 @@ public class App extends Application {
             f.setOnFinished(e -> openMap().playerView3d());
             f.play();
         }
+        if (getParameters().getUnnamed().contains("--input-check")) {
+            javafx.animation.PauseTransition f = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(4));
+            f.setOnFinished(e -> openMap().inputCheck3d());
+            f.play();
+        }
         String snap = named.get("snapshot"), mapSnap = named.get("mapsnapshot");
         if (snap != null || mapSnap != null) {
             javafx.animation.PauseTransition t = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(6));

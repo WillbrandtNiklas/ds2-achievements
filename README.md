@@ -117,11 +117,18 @@ Im Kartenfenster schaltet **3D** auf die Karte des gewählten Gebiets um, ohne A
   - Leuchtfeuer: Flamme, leuchtend und mit Licht, wenn entzündet.
   - Lila Säulen: Übergänge zu anderen Gebieten.
 - **Spieler:** cyanfarbene Figur mit Blickrichtung und hohem Lichtstrahl, an der Position aus dem Spielstand.
-- **Steuerung (Orbit, Standard):** Ziehen dreht um den Drehpunkt, rechte Maustaste oder Shift+Ziehen verschiebt,
-  Mausrad zoomt zum Mauszeiger, Doppelklick setzt den Drehpunkt auf die angeklickte Stelle, WASD verschiebt.
-  Knöpfe: „Schräg“, „Draufsicht“, „Ganze Karte“, „Zum Spieler“. Ein Klick auf einen Marker zeigt Details.
-- **Freie Kamera:** Maus ziehen = umsehen, WASD = bewegen, Q/E = runter/hoch, Shift = schneller, Mausrad = vor/zurück.
-- **Vom Spieler aus:** stellt die freie Kamera in Augenhöhe an deine gespeicherte Position und in deine Blickrichtung.
+- **Zwei Steuerungsmodi**, umschalten mit **F** oder dem Knopf „Flugmodus“. **H** blendet die Steuerungshilfe unten
+  links aus und ein.
+  - **Orbit (Standard):** links ziehen = drehen, rechts ziehen (oder Shift + links) = verschieben, Mausrad = zum
+    Mauszeiger zoomen (am kleinsten Abstand geht es weiter durchs Level), Doppelklick auf Boden oder Marker =
+    dorthin fokussieren, WASD = Drehpunkt verschieben. Kleinster/größter Abstand und Geschwindigkeiten werden aus der
+    Größe des Gebiets berechnet.
+  - **Flugmodus:** WASD = bewegen, Q/E = runter/hoch, Shift = schneller. Klick in die Ansicht fängt die Maus
+    (Mauszeiger verschwindet), dann dreht die Maus den Blick. Esc gibt die Maus frei, ein zweites Esc wechselt zurück
+    zum Orbit. Das Mausrad ändert die Fluggeschwindigkeit.
+- **Knöpfe:** „Schräg“, „Draufsicht“, „Ganzes Gebiet“, „Zum Spieler“, „Vom Spieler aus“ (Flugmodus in Augenhöhe an
+  deiner gespeicherten Position). Beim Laden eines Gebiets wird die Kamera automatisch so gesetzt, dass das ganze
+  Gebiet sichtbar ist. Ein Klick auf einen Marker zeigt Details.
 
 **Wie „live“ ist die Spielerposition?** Sie kommt aus dem Spielstand, nicht aus dem Spielspeicher (das ist bewusst
 ausgeschlossen). Sie aktualisiert sich also bei jedem Speichern des Spiels: beim Aufheben von Items, an Leuchtfeuern,
