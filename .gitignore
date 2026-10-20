@@ -4,3 +4,4 @@ state.json
 probe/snapshots/
 state.json.tmp
 .idea/
+extracted/

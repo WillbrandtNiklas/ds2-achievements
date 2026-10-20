@@ -4,18 +4,36 @@ Checkliste für einen Durchgang in **Dark Souls II: Scholar of the First Sin** (
 **Spielstand**, nicht aus deinen Steam-Achievements. Die App liest nur. Sie verändert weder den Spielstand noch den
 Spielspeicher.
 
-Stand: **Weltkarte Stufe 1** (Verbindungsgraph). Stufe 2 (Items pro Gebiet), Stufe 3 (3D-Karten) und der Item-Geber folgen.
+Stand: **Weltkarte Stufe 2** (Pergamentkarte und Items pro Gebiet). Stufe 3 (3D-Karten) und der Item-Geber folgen.
 
 Alle Spielnamen (Gebiete, Bosse, NPCs, Items, Zauber, Bünde) sind englisch wie im Spiel, Erklärungen deutsch.
 
 ## Starten
 
 1. Java 21 oder neuer muss installiert sein (`java -version`).
-2. Doppelklick auf `start.bat`.
+2. Einmalig `setup.bat` ausführen: liest die Item-Fundorte aus deiner Spielinstallation (siehe „Setup“).
+3. Doppelklick auf `start.bat`.
 
 Beim ersten Start baut `build.bat` die App automatisch. Dafür wird Maven gesucht: im PATH, in der Umgebungsvariable
 `MVN` oder im Maven-Wrapper-Cache unter `%USERPROFILE%\.m2\wrapper`. Wenn du Code oder Daten änderst, `build.bat` erneut
 ausführen. Für Änderungen an der JSON-Datei reicht ein Neustart der App.
+
+## Setup (Item-Daten aus deiner Installation)
+
+`setup.bat` läuft einmalig und liest nur:
+
+- Es sucht den Spielordner über die Steam-Bibliotheken. Ein anderer Ort lässt sich als Argument angeben:
+  `setup.bat "D:\SteamLibrary\steamapps\common\Dark Souls II Scholar of the First Sin\Game"`.
+- Es liest `Game\Param\ItemLotParam2_Other.param`, also alle Item-Fundorte mit Inhalt, Menge und Verstärkung.
+  Die Karte steckt in der ID: `10026100` liegt in m10_02 (Things Betwixt).
+- Für englische Item-Namen und Ortsangaben lädt es zwei Namenslisten aus dem Open-Source-Projekt
+  [Paramdex](https://github.com/soulsmods/Paramdex), auf einen festen Stand gepinnt. Ohne Internet gibt es nur IDs.
+- Ergebnis ist `extracted/items.json`. Der Ordner steht in der `.gitignore` und wird nicht committet.
+- Ändert sich die Spieldatei (z. B. durch ein Update oder einen Mod), weist die App darauf hin. Dann `setup.bat` neu
+  ausführen.
+
+Liegen die Params in deiner Installation nicht als lose Dateien vor, bricht das Setup mit einem Hinweis ab. Das
+Entpacken aus den Spielarchiven gehört zu Stufe 3.
 
 ## Spielstand
 
@@ -52,8 +70,18 @@ wenn du den falschen NPC tötest. Ein Leuchtfeuer-Asket belebt keine NPCs wieder
 ## Weltkarte
 
 Der Knopf **Weltkarte** öffnet ein eigenes Fenster, gedacht für den zweiten Monitor. Es aktualisiert sich live mit
-dem Spielstand, genau wie die Checkliste.
+dem Spielstand, genau wie die Checkliste. Oben schaltest du zwischen **Karte** und **Diagramm** um.
 
+**Karte (Pergament):** Drangleic im Stil der Karte in Majula, prozedural gezeichnet, ohne Spielgrafik.
+- Gebiete sind Landflächen mit Geländesymbolen (Wald, Berge, Burg, Turm, Wasser, Höhle). Unbesuchte Gebiete liegen
+  unter Nebel, das aktuelle Gebiet leuchtet.
+- Unter dem Namen stehen die Leuchtfeuer als Flammen (brennend = entzündet) und die Bosse als Totenköpfe
+  (durchgestrichen = besiegt). Darunter „Items x/y“ = wichtige Fundorte eingesammelt / gesamt.
+- Wege sind gestrichelte Pfade. Rot mit Schloss = verschlossen, blau gepunktet = Teleport.
+- Grave of Saints, The Gutter, Black Gulch und Shulva liegen im Kasten „Unter Majula“.
+- Positionen, Größe und Gelände stehen in `data/world.json` (Felder `karte` und `gelaende`) und lassen sich anpassen.
+
+**Diagramm:**
 - **Gebiete** sind Kästen, **Verbindungen** Linien. Mausrad zoomt, Ziehen verschiebt, „Ansicht zurücksetzen“ passt alles
   ins Fenster. DLC-Gebiete haben einen gestrichelten Rand und lassen sich ausblenden.
 - **Farben:** Gold mit dickem Rand = aktuelles Gebiet, braun = besucht, dunkel = noch nicht besucht.
@@ -62,12 +90,31 @@ dem Spielstand, genau wie die Checkliste.
   aufgeht. Andere Symbole: ↕ Aufzug, ▯ Tür, ✦ Teleport, ≈ Schiff, ↓ Abstieg. Ein Pfeil zeigt eine Einbahn.
 - Ein Weg gilt als **offen**, wenn du die Voraussetzung erfüllst (z. B. Schlüssel im Inventar, Boss besiegt) oder
   beide Gebiete schon besucht hast.
-- **Klick auf ein Gebiet** zeigt rechts Leuchtfeuer (✓ entzündet), Bosse, alle Ausgänge mit Voraussetzungen und die
+- **Klick auf ein Gebiet** (in beiden Ansichten) zeigt im Reiter **Gebiet** Leuchtfeuer (✓ entzündet), Bosse, alle Ausgänge mit Voraussetzungen und die
   Achievements, die dort eine Rolle spielen, samt aktueller Warnungen.
 
 Alle Gebiets- und Verbindungsdaten stehen in `data/world.json` und sind frei editierbar (Position, Leuchtfeuer,
 Bosse, Voraussetzungen). Unsichere Einträge sind dort mit `unsicher` markiert und erscheinen in der App orange als
 „Bitte prüfen“.
+
+## Items pro Gebiet
+
+Der Reiter **Items** rechts im Kartenfenster listet alle Fundorte des gewählten Gebiets aus `extracted/items.json`.
+
+- **Filter:** wichtige Items, einzelne Kategorien (Schlüsselitems, Ringe, Zauber, Estus Flask Shards, Sublime Bone Dust,
+  Waffen & Schilde, Rüstung, Boss-Seelen, Bund-Items, Material, Verbrauchsgüter) oder alle. Dazu „nur nicht
+  eingesammelte“. Fundorte, die es erst in NG+ gibt, werden ab NG+ automatisch gezeigt, vorher nur auf Wunsch.
+- **Status:**
+  - *eingesammelt*: ein eindeutiges Item des Fundorts (Schlüssel, Ring, Zauber, Waffe, Rüstung) liegt im Inventar
+  - *offen*: der Fundort enthält so ein Item, aber es ist nicht im Inventar
+  - *unbekannt*: nur Verbrauchsgüter, Estus Flask Shards, Bone Dust usw. Ob die aufgehoben sind, steht in Flags im
+    Spielstand, die noch nicht entschlüsselt sind. Bis dahin hakst du sie selbst ab (Häkchen, pro Charakter in
+    `state.json`).
+- ★ = relevant für ein Achievement (z. B. Zauber für „Master of …“, King's Ring).
+- **Geteilte Karten:** Lost Bastille, Belfry Luna und Sinners' Rise liegen auf einer Karte, die Spieldaten
+  unterscheiden die Fundorte dort nicht. Die Items stehen dann beim ersten Gebiet der Karte, die anderen verweisen
+  darauf. Das gilt ebenso für Earthen Peak/Harvest Valley, Iron Keep/Belfry Sol und andere.
+- Zufallstabellen (z. B. Geschenke von Dyna & Tillo) erscheinen als „Zufällig eines davon“ und zählen nicht mit.
 
 ## Bedienung
 
@@ -102,6 +149,8 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 | Entzündete Leuchtfeuer | zuverlässig (Tabelle in den Weltdaten des Slots, mit Fortnite gegengeprüft) |
 | Karten-IDs der Memories, Dark Chasm, Shrine of Winter, einiger DLC-Gebiete | geraten bzw. unbekannt, in `world.json` markiert |
 | Geöffnete Türen und Abkürzungen | noch nicht erkannt. Die Karte zeigt nur, ob du die Voraussetzung erfüllst. |
+| Item-Fundorte | aus deiner Installation (`setup.bat`), vollständig |
+| Aufgehobene Items | eindeutige Items über das Inventar. Verbrauchsgüter noch nicht, da die Aufheben-Flags fehlen. |
 | NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
 | Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
