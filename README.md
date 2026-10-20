@@ -90,7 +90,7 @@ dem Spielstand, genau wie die Checkliste. Oben schaltest du zwischen **Karte** u
 - Positionen, Größe und Gelände stehen in `data/world.json` (Felder `karte` und `gelaende`) und lassen sich anpassen.
 
 **Diagramm:**
-- **Gebiete** sind Kästen, **Verbindungen** Linien. Mausrad zoomt, Ziehen verschiebt, „Ansicht zurücksetzen“ passt alles
+- **Gebiete** sind Kästen, **Verbindungen** Linien. Mausrad zoomt zum Mauszeiger, Ziehen verschiebt, „Ansicht zurücksetzen“ passt alles
   ins Fenster. DLC-Gebiete haben einen gestrichelten Rand und lassen sich ausblenden.
 - **Farben:** Gold mit dickem Rand = aktuelles Gebiet, braun = besucht, dunkel = noch nicht besucht.
 - In jedem Kasten steht, wie viele **Leuchtfeuer** entzündet und **Bosse** besiegt sind.
@@ -117,8 +117,11 @@ Im Kartenfenster schaltet **3D** auf die Karte des gewählten Gebiets um, ohne A
   - Leuchtfeuer: Flamme, leuchtend und mit Licht, wenn entzündet.
   - Lila Säulen: Übergänge zu anderen Gebieten.
 - **Spieler:** cyanfarbene Figur mit Blickrichtung und hohem Lichtstrahl, an der Position aus dem Spielstand.
-- **Steuerung:** Ziehen dreht, rechte Maustaste oder Shift+Ziehen verschiebt, Mausrad zoomt. Dazu die Knöpfe
-  „Schräg“, „Draufsicht“, „Ganze Karte“ und „Zum Spieler“. Ein Klick auf einen Marker zeigt Details.
+- **Steuerung (Orbit, Standard):** Ziehen dreht um den Drehpunkt, rechte Maustaste oder Shift+Ziehen verschiebt,
+  Mausrad zoomt zum Mauszeiger, Doppelklick setzt den Drehpunkt auf die angeklickte Stelle, WASD verschiebt.
+  Knöpfe: „Schräg“, „Draufsicht“, „Ganze Karte“, „Zum Spieler“. Ein Klick auf einen Marker zeigt Details.
+- **Freie Kamera:** Maus ziehen = umsehen, WASD = bewegen, Q/E = runter/hoch, Shift = schneller, Mausrad = vor/zurück.
+- **Vom Spieler aus:** stellt die freie Kamera in Augenhöhe an deine gespeicherte Position und in deine Blickrichtung.
 
 **Wie „live“ ist die Spielerposition?** Sie kommt aus dem Spielstand, nicht aus dem Spielspeicher (das ist bewusst
 ausgeschlossen). Sie aktualisiert sich also bei jedem Speichern des Spiels: beim Aufheben von Items, an Leuchtfeuern,

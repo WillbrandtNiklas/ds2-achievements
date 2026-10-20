@@ -107,6 +107,11 @@ public class App extends Application {
             f.setOnFinished(e -> openMap().focusPlayer3d());
             f.play();
         }
+        if (getParameters().getUnnamed().contains("--player-view")) {
+            javafx.animation.PauseTransition f = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(4));
+            f.setOnFinished(e -> openMap().playerView3d());
+            f.play();
+        }
         String snap = named.get("snapshot"), mapSnap = named.get("mapsnapshot");
         if (snap != null || mapSnap != null) {
             javafx.animation.PauseTransition t = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(6));

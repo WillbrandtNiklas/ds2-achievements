@@ -42,6 +42,8 @@ public final class MapWindow {
     private final Stage stage = new Stage();
     private final Pane content = new Pane();
     private final Group zoomGroup = new Group(content);
+    private final javafx.scene.transform.Translate pan = new javafx.scene.transform.Translate();
+    private final javafx.scene.transform.Scale zoom = new javafx.scene.transform.Scale(1, 1, 0, 0);
     private final Pane viewport = new Pane(zoomGroup);
     private final VBox side = new VBox(8);
     private final Label header = new Label();
@@ -135,19 +137,27 @@ public final class MapWindow {
         clip.widthProperty().bind(viewport.widthProperty());
         clip.heightProperty().bind(viewport.heightProperty());
         viewport.setClip(clip);
+        // Bildschirm = pan + zoom * Karte; Skalierung ab der linken oberen Ecke, damit Zoomen zur Maus exakt rechenbar ist
+        zoomGroup.getTransforms().setAll(pan, zoom);
         viewport.setOnScroll(e -> {
-            double f = e.getDeltaY() > 0 ? 1.12 : 1 / 1.12;
-            double s = Math.max(0.3, Math.min(3, zoomGroup.getScaleX() * f));
-            zoomGroup.setScaleX(s);
-            zoomGroup.setScaleY(s);
+            if (e.getDeltaY() == 0) return;
+            double f = e.getDeltaY() > 0 ? 1.15 : 1 / 1.15;
+            double s = zoom.getX(), ns = Math.max(0.25, Math.min(6, s * f));
+            // Kartenpunkt unter der Maus bleibt unter der Maus
+            double px = (e.getX() - pan.getX()) / s, py = (e.getY() - pan.getY()) / s;
+            zoom.setX(ns);
+            zoom.setY(ns);
+            pan.setX(e.getX() - px * ns);
+            pan.setY(e.getY() - py * ns);
+            e.consume();
         });
         viewport.setOnMousePressed(e -> {
-            dragX = e.getSceneX() - zoomGroup.getTranslateX();
-            dragY = e.getSceneY() - zoomGroup.getTranslateY();
+            dragX = e.getX() - pan.getX();
+            dragY = e.getY() - pan.getY();
         });
         viewport.setOnMouseDragged(e -> {
-            zoomGroup.setTranslateX(e.getSceneX() - dragX);
-            zoomGroup.setTranslateY(e.getSceneY() - dragY);
+            pan.setX(e.getX() - dragX);
+            pan.setY(e.getY() - dragY);
         });
 
         side.setPadding(new Insets(12));
@@ -208,6 +218,11 @@ public final class MapWindow {
     /** Testhilfe: in der 3D-Ansicht auf den Spieler zoomen. */
     public void focusPlayer3d() {
         map3d.focusPlayer();
+    }
+
+    /** Testhilfe: 3D-Ansicht aus Sicht des Spielers. */
+    public void playerView3d() {
+        map3d.playerView();
     }
 
     /** Testhilfe: Ansicht "karte", "diagramm" oder "3d" wählen. */
@@ -271,12 +286,12 @@ public final class MapWindow {
             }
             double vw = viewport.getWidth() > 0 ? viewport.getWidth() : 1100, vh = viewport.getHeight() > 0 ? viewport.getHeight() : 840;
             double s = Math.min(1.2, Math.min((vw - 30) / (maxX + 20), (vh - 30) / (maxY + 20)));
-            zoomGroup.setScaleX(s);
-            zoomGroup.setScaleY(s);
-            // Skalierung wirkt um die Mitte der Gruppe: Verschiebung so wählen, dass die linke obere Ecke bei 10/10 liegt
-            double cw = content.getBoundsInLocal().getWidth(), ch = content.getBoundsInLocal().getHeight();
-            zoomGroup.setTranslateX(10 - (cw - cw * s) / 2 - content.getBoundsInLocal().getMinX() * s);
-            zoomGroup.setTranslateY(10 - (ch - ch * s) / 2 - content.getBoundsInLocal().getMinY() * s);
+            zoom.setX(s);
+            zoom.setY(s);
+            // Karte mittig einpassen, linke obere Ecke mindestens bei 10/10
+            double minX = content.getBoundsInLocal().getMinX(), minY = content.getBoundsInLocal().getMinY();
+            pan.setX(Math.max(10, (vw - maxX * s) / 2) - minX * s);
+            pan.setY(Math.max(10, (vh - maxY * s) / 2) - minY * s);
         });
     }
 
