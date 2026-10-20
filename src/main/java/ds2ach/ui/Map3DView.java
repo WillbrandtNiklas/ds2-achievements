@@ -61,12 +61,15 @@ public final class Map3DView {
     private final VBox help = new VBox(2);
     private final List<Node> scaled = new ArrayList<>();
     private final ToggleButton flyBtn = new ToggleButton("Flugmodus (F)"), helpBtn = new ToggleButton("Steuerung (H)");
-    private final ToggleButton netBtn = new ToggleButton("Wege-Netz (N)");
+    private final ToggleButton netBtn = new ToggleButton("Wege-Netz (N)"), texBtn = new ToggleButton("Texturen (T)");
     private final javafx.scene.control.Slider cutSlider = new javafx.scene.control.Slider(1, 40, 6);
     private final Label cutLabel = new Label();
     private ds2ach.data.MapModel model;
-    private TriangleMesh modelMesh;
-    private int[] modelFaces;
+    private final List<TriangleMesh> modelMeshes = new ArrayList<>();
+    private final List<int[]> modelFaces = new ArrayList<>();
+    private final List<MeshView> modelViews = new ArrayList<>();
+    private final List<PhongMaterial> texMaterials = new ArrayList<>();
+    private final PhongMaterial clay = clayMaterial();
     private Node navGroup = new Group();
     private String mapName = "";
     private volatile long loadToken;
@@ -84,6 +87,7 @@ public final class Map3DView {
     private double extent = 200, height = 30, mx, my;
     private double[] player;
     private double playerYaw;
+    private Node playerNode;
 
     public Map3DView(World world) {
         this.world = world;
@@ -153,7 +157,7 @@ public final class Map3DView {
         VBox bottom = new VBox(6, info, help);
         bottom.setPickOnBounds(false);
         bottom.setMouseTransparent(true);
-        // Zweite Zeile: Schnitthöhe des Tonmodells und Wege-Netz
+        // Zweite Zeile: Schnitthöhe des Modells, Texturen und Wege-Netz
         cutSlider.setPrefWidth(220);
         cutSlider.setFocusTraversable(false);
         cutSlider.setShowTickMarks(true);
@@ -166,7 +170,11 @@ public final class Map3DView {
         cutLabel.setText("Schnitt: 6 m");
         netBtn.setFocusTraversable(false);
         netBtn.setOnAction(e -> navGroup.setVisible(netBtn.isSelected() || model == null));
-        HBox cutRow = new HBox(8, modeLabel, passThroughSpacer(), cutLabel, cutSlider, netBtn);
+        texBtn.setFocusTraversable(false);
+        texBtn.setSelected(true);
+        texBtn.setOnAction(e -> applyMaterials());
+        Tooltip.install(texBtn, new Tooltip("Aus: einfarbiges Tonmodell, Formen sind dann leichter zu erkennen"));
+        HBox cutRow = new HBox(8, modeLabel, passThroughSpacer(), cutLabel, cutSlider, texBtn, netBtn);
         HBox.setHgrow(cutRow.getChildren().get(1), Priority.ALWAYS);
         cutRow.setAlignment(Pos.CENTER_LEFT);
         cutRow.setPadding(new Insets(0, 8, 0, 0));
@@ -322,6 +330,10 @@ public final class Map3DView {
                     netBtn.setSelected(!netBtn.isSelected());
                     navGroup.setVisible(netBtn.isSelected() || model == null);
                 }
+                case T -> {
+                    texBtn.setSelected(!texBtn.isSelected());
+                    applyMaterials();
+                }
                 case PAGE_UP, ADD, PLUS -> cutSlider.setValue(cutSlider.getValue() + 2);
                 case PAGE_DOWN, SUBTRACT, MINUS -> cutSlider.setValue(cutSlider.getValue() - 2);
                 case ESCAPE -> {
@@ -399,7 +411,7 @@ public final class Map3DView {
             addHelp("Orbit", "Links ziehen = drehen · Rechts ziehen (oder Shift) = verschieben",
                     "Mausrad = zum Mauszeiger zoomen · Doppelklick = Punkt/Marker fokussieren",
                     "WASD = Drehpunkt verschieben · Marker anklicken = Details",
-                    "Schnitthöhe: Regler oder Bild auf/ab · N = Wege-Netz",
+                    "Schnitthöhe: Regler oder Bild auf/ab · T = Texturen · N = Wege-Netz",
                     "F = Flugmodus · H = Hilfe aus/ein");
         }
     }
@@ -422,16 +434,18 @@ public final class Map3DView {
     }
 
     /**
-     * Neue Karte anzeigen. Das Wege-Netz erscheint sofort, das Tonmodell wird im Hintergrund geladen und dann
-     * eingesetzt (große Gebiete haben über eine Million Dreiecke).
+     * Neue Karte anzeigen. Das Wege-Netz erscheint sofort, das Modell wird samt Texturen im Hintergrund geladen
+     * und dann eingesetzt (große Gebiete haben über eine Million Dreiecke und über hundert Texturen).
      */
     public void show(MapGeo.Map3D m, String name, java.util.function.Supplier<ds2ach.data.MapModel> modelLoader) {
         if (m == map) return;
         map = m;
         mapName = name;
         content.getChildren().clear();
-        modelMesh = null;
-        modelFaces = null;
+        modelMeshes.clear();
+        modelFaces.clear();
+        modelViews.clear();
+        texMaterials.clear();
         model = null;
         info.setVisible(false);
         if (m == null || m.netz() == null || m.netz().punkte().length == 0) {
@@ -447,14 +461,19 @@ public final class Map3DView {
         long token = ++loadToken;
         Thread t = new Thread(() -> {
             ds2ach.data.MapModel mm = modelLoader == null ? null : modelLoader.get();
+            List<ds2ach.data.MapModel.Pixels> pixels = new ArrayList<>(); // DXT dekodieren, solange wir noch im Hintergrund sind
+            if (mm != null) for (ds2ach.data.MapModel.Texture tx : mm.textures) {
+                if (token != loadToken) return;
+                pixels.add(tx.decode(512));
+            }
             Platform.runLater(() -> {
                 if (token != loadToken) return; // inzwischen andere Karte gewählt
                 if (mm == null) {
-                    title.setText(name + "  ·  Wege-Netz (kein Tonmodell, setup.bat ausführen)");
+                    title.setText(name + "  ·  Wege-Netz (kein Modell, setup.bat ausführen)");
                     return;
                 }
                 model = mm;
-                Node mv = buildModel(mm);
+                Node mv = buildModel(mm, pixels);
                 content.getChildren().add(0, mv);
                 applyCut();
                 navGroup.setVisible(netBtn.isSelected());
@@ -464,68 +483,84 @@ public final class Map3DView {
         t.start();
     }
 
-    /** Schnitthöhe anwenden: nur Dreiecke bis zur eingestellten Höhe über dem Weg zeigen (Liste ist danach sortiert). */
+    /** Schnitthöhe anwenden: je Textur-Gruppe nur Dreiecke bis zur eingestellten Höhe über dem Weg zeigen (Listen sind danach sortiert). */
     private void applyCut() {
-        if (model == null || modelMesh == null) return;
+        if (model == null || modelMeshes.isEmpty()) return;
         double cut = cutSlider.getValue();
         boolean all = cut >= cutSlider.getMax() - 0.01;
-        int n = all ? model.triangleCount() : model.countUpTo(cut);
-        modelMesh.getFaces().setAll(modelFaces, 0, n * 6);
+        int n = 0;
+        for (int i = 0; i < modelMeshes.size(); i++) {
+            ds2ach.data.MapModel.Group g = model.groups.get(i);
+            int k = all ? g.triangleCount() : g.countUpTo(cut);
+            modelMeshes.get(i).getFaces().setAll(modelFaces.get(i), 0, k * 6);
+            modelViews.get(i).setVisible(k > 0);
+            n += k;
+        }
         cutLabel.setText(all ? "Schnitt: aus" : String.format(Locale.ROOT, "Schnitt: %.0f m", cut));
-        title.setText(mapName + "  ·  Tonmodell");
-        Tooltip.install(title, new Tooltip(String.format(Locale.GERMANY, "%,d von %,d Dreiecken sichtbar", n, model.triangleCount())));
+        title.setText(mapName + "  ·  Modell");
+        Tooltip.install(title, new Tooltip(String.format(Locale.GERMANY, "%,d von %,d Dreiecken sichtbar, %d Texturen",
+                n, model.triangleCount(), model.textures.size())));
     }
 
-    /** Tonmodell als ein großes Mesh; Färbung nach Höhe (dunkel unten, hell oben), Dreiecke werden per Schnitt begrenzt. */
-    private Node buildModel(ds2ach.data.MapModel mm) {
-        float[] v = mm.verts;
-        int n = v.length / 3;
-        float minY = Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
-        for (int i = 0; i < n; i++) {
-            minY = Math.min(minY, v[3 * i + 1]);
-            maxY = Math.max(maxY, v[3 * i + 1]);
+    /** Je Textur-Gruppe ein Mesh mit eigener Farbtextur; ohne gefundene Textur oder mit T ausgeschaltet: Tonfarbe. */
+    private Node buildModel(ds2ach.data.MapModel mm, List<ds2ach.data.MapModel.Pixels> pixels) {
+        for (int i = 0; i < mm.textures.size(); i++) {
+            ds2ach.data.MapModel.Pixels px = pixels.get(i);
+            WritableImage img = new WritableImage(px.width(), px.height());
+            img.getPixelWriter().setPixels(0, 0, px.width(), px.height(), javafx.scene.image.PixelFormat.getIntArgbInstance(),
+                    px.argb(), 0, px.width());
+            PhongMaterial mat = new PhongMaterial(Color.WHITE);
+            mat.setDiffuseMap(img);
+            mat.setSpecularColor(Color.rgb(20, 18, 15));
+            texMaterials.add(mat);
         }
-        // Färbung um den begehbaren Bereich zentrieren, sonst dominieren Klippen und Täler
-        float lo = (float) (center[1] - height), hi = (float) (center[1] + height * 1.5);
-        float[] pts = new float[n * 3], tex = new float[n * 2];
-        for (int i = 0; i < n; i++) {
-            pts[3 * i] = v[3 * i];
-            pts[3 * i + 1] = -v[3 * i + 1];
-            pts[3 * i + 2] = v[3 * i + 2];
-            tex[2 * i] = (float) Math.max(0.01, Math.min(0.99, (v[3 * i + 1] - lo) / Math.max(1, hi - lo)));
-            tex[2 * i + 1] = 0.5f;
+        Group g3 = new Group();
+        List<Node> opaque = new ArrayList<>(), transparent = new ArrayList<>();
+        for (ds2ach.data.MapModel.Group g : mm.groups) {
+            float[] v = g.verts;
+            float[] pts = new float[v.length];
+            for (int i = 0; i < v.length; i += 3) {
+                pts[i] = v[i];
+                pts[i + 1] = -v[i + 1];
+                pts[i + 2] = v[i + 2];
+            }
+            int[] t = g.tris, faces = new int[t.length * 2];
+            for (int i = 0; i < t.length; i++) {
+                faces[2 * i] = t[i];
+                faces[2 * i + 1] = t[i];
+            }
+            TriangleMesh mesh = new TriangleMesh();
+            mesh.getPoints().setAll(pts);
+            mesh.getTexCoords().setAll(g.uvs);
+            MeshView mv = new MeshView(mesh);
+            mv.setCullFace(CullFace.NONE);
+            mv.setMouseTransparent(true); // Treffer berechnen wir selbst (navRaycast), JavaFX-Picking wäre bei 1 Mio. Dreiecken zu langsam
+            modelMeshes.add(mesh);
+            modelFaces.add(faces);
+            modelViews.add(mv);
+            (g.alpha ? transparent : opaque).add(mv);
         }
-        int[] t = mm.tris;
-        modelFaces = new int[t.length * 2];
-        for (int i = 0; i < t.length; i++) {
-            modelFaces[2 * i] = t[i];
-            modelFaces[2 * i + 1] = t[i];
-        }
-        modelMesh = new TriangleMesh();
-        modelMesh.getPoints().setAll(pts);
-        modelMesh.getTexCoords().setAll(tex);
-        MeshView mv = new MeshView(modelMesh);
-        mv.setCullFace(CullFace.NONE);
-        mv.setMouseTransparent(true); // Treffer berechnen wir selbst (navRaycast), JavaFX-Picking wäre bei 1 Mio. Dreiecken zu langsam
-        PhongMaterial mat = new PhongMaterial();
-        mat.setDiffuseMap(clayGradient());
-        mat.setSpecularColor(Color.rgb(25, 22, 18));
-        mv.setMaterial(mat);
-        return mv;
+        // Durchsichtige Gruppen (Blätter, Gitter) zuletzt zeichnen, damit dahinter Liegendes schon da ist
+        g3.getChildren().addAll(opaque);
+        g3.getChildren().addAll(transparent);
+        applyMaterials();
+        return g3;
     }
 
-    /** Tonfarben: dunkles Braun unten, warmer Sand in Weghöhe, helles Beige oben. */
-    private static WritableImage clayGradient() {
-        WritableImage img = new WritableImage(256, 2);
-        Color[] stops = {Color.rgb(70, 55, 42), Color.rgb(150, 125, 95), Color.rgb(205, 185, 150), Color.rgb(235, 225, 205)};
-        for (int x = 0; x < 256; x++) {
-            double t = x / 255.0 * (stops.length - 1);
-            int i = Math.min(stops.length - 2, (int) t);
-            Color c = stops[i].interpolate(stops[i + 1], t - i);
-            img.getPixelWriter().setColor(x, 0, c);
-            img.getPixelWriter().setColor(x, 1, c);
+    private void applyMaterials() {
+        if (model == null) return;
+        boolean tex = texBtn.isSelected();
+        for (int i = 0; i < modelViews.size(); i++) {
+            int t = model.groups.get(i).texture;
+            modelViews.get(i).setMaterial(tex && t >= 0 && t < texMaterials.size() ? texMaterials.get(t) : clay);
         }
-        return img;
+    }
+
+    /** Tonfarbe: warmer Sand, die Form kommt über das Licht. */
+    private static PhongMaterial clayMaterial() {
+        PhongMaterial m = new PhongMaterial(Color.rgb(196, 172, 138));
+        m.setSpecularColor(Color.rgb(25, 22, 18));
+        return m;
     }
 
     /**
@@ -562,6 +597,7 @@ public final class Map3DView {
         markers.getChildren().clear();
         scaled.clear();
         player = null;
+        playerNode = null;
         if (map == null) return;
         Map<Long, Items.Lot> lots = new HashMap<>();
         if (items != null) for (Items.Lot l : items.lots) lots.put(l.id(), l);
@@ -597,7 +633,8 @@ public final class Map3DView {
             float[] p = c.position();
             player = new double[]{p[0], p[1], p[2]};
             playerYaw = p[3];
-            place(playerMarker(p[3]), p[0], p[1], p[2], c.name() + " (Position beim letzten Speichern)");
+            playerNode = playerMarker(p[3]);
+            place(playerNode, p[0], p[1], p[2], c.name() + " (Position beim letzten Speichern)");
         }
         rescaleMarkers();
     }
@@ -717,6 +754,14 @@ public final class Map3DView {
         target.setX(target.getX() + dir.getX() * amount);
         target.setY(target.getY() + dir.getY() * amount);
         target.setZ(target.getZ() + dir.getZ() * amount);
+        updatePlayerVisibility();
+    }
+
+    /** Steht die Kamera im Spieler-Marker (Ansicht "Vom Spieler aus"), verdeckt er sonst das halbe Bild. */
+    private void updatePlayerVisibility() {
+        if (playerNode == null || player == null) return;
+        double r = 3 * playerNode.getScaleY();
+        playerNode.setVisible(eye().distance(player[0], -(player[1] + 1), player[2]) > r);
     }
 
     /** Augenposition = Drehpunkt + Abstand entgegen der Blickrichtung. */
@@ -769,12 +814,13 @@ public final class Map3DView {
     /** Marker wachsen beim Herauszoomen mit, damit sie sichtbar bleiben. */
     private void rescaleMarkers() {
         double d = fly ? flySpeed * 2 : -dist.getZ();
-        double s = clamp(d / 45, 1, 14); // im Tonmodell müssen Marker deutlich größer sein als auf dem Wege-Netz
+        double s = clamp(d / 45, 1, 14); // im Modell müssen Marker deutlich größer sein als auf dem Wege-Netz
         for (Node n : scaled) {
             n.setScaleX(s);
             n.setScaleY(s);
             n.setScaleZ(s);
         }
+        updatePlayerVisibility();
     }
 
     // ---------- Geometrie ----------

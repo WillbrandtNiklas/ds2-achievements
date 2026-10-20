@@ -51,9 +51,9 @@ public final class MapGeo {
 
     private final Map<Integer, Optional<MapModel>> models = new HashMap<>();
 
-    /** Tonmodell laden (zwischengespeichert, die letzten paar Karten); leer, wenn nicht extrahiert. */
+    /** Modell mit Texturen laden (zwischengespeichert, die letzten zwei Karten); leer, wenn nicht extrahiert. */
     public synchronized Optional<MapModel> loadModel(int mapId) {
-        if (!models.containsKey(mapId) && models.size() >= 4) models.clear(); // Speicher: nur wenige Modelle halten
+        if (!models.containsKey(mapId) && models.size() >= 2) models.clear(); // Speicher: Texturen sind groß, nur zwei Modelle halten
         return models.computeIfAbsent(mapId, id -> {
             Path p = dir.getParent().resolve("models").resolve(String.format("m%02d_%02d.bin.gz", (id >>> 24) & 0xFF, (id >>> 16) & 0xFF));
             if (!Files.exists(p)) return Optional.empty();

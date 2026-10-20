@@ -70,8 +70,8 @@ public final class Setup {
             System.err.println("Karten konnten nicht gelesen werden: " + e.getMessage());
         }
 
-        // 3) Kartenmodelle als Tonmodell (dauert pro Gebiet einige Sekunden)
-        System.out.println("Lese Kartenmodelle (Tonmodell für die 3D-Ansicht) ...");
+        // 3) Kartenmodelle mit Texturen (dauert pro Gebiet einige Sekunden)
+        System.out.println("Lese Kartenmodelle mit Texturen (für die 3D-Ansicht) ...");
         try {
             int n = ModelExtractor.extractAll(game, out.resolve("maps"), out.resolve("models"));
             System.out.println(n + " Modelle nach " + out.resolve("models") + " geschrieben.");
