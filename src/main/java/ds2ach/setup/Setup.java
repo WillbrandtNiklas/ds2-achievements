@@ -69,6 +69,15 @@ public final class Setup {
         } catch (Exception e) {
             System.err.println("Karten konnten nicht gelesen werden: " + e.getMessage());
         }
+
+        // 3) Kartenmodelle als Tonmodell (dauert pro Gebiet einige Sekunden)
+        System.out.println("Lese Kartenmodelle (Tonmodell für die 3D-Ansicht) ...");
+        try {
+            int n = ModelExtractor.extractAll(game, out.resolve("maps"), out.resolve("models"));
+            System.out.println(n + " Modelle nach " + out.resolve("models") + " geschrieben.");
+        } catch (Exception e) {
+            System.err.println("Kartenmodelle konnten nicht gelesen werden: " + e.getMessage());
+        }
     }
 
     /** DS2-PARAM (64-Bit-Zeilentabelle): Zeilenzahl bei 0x0A, Zeilen ab 0x40 je 24 Bytes (ID, Datenoffset, Namensoffset). */

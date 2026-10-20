@@ -258,7 +258,8 @@ public final class MapWindow {
             }
         }
         if (m == null && a != null) name = a.name();
-        map3d.show(m, name);
+        final MapGeo.Map3D shown = m;
+        map3d.show(m, name, shown == null || geo == null ? null : () -> geo.loadModel(shown.mapId()).orElse(null));
         map3d.update(current, items, manualLots, achItemIds);
     }
 

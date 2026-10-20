@@ -49,6 +49,23 @@ public final class MapGeo {
         return Files.isDirectory(dir);
     }
 
+    private final Map<Integer, Optional<MapModel>> models = new HashMap<>();
+
+    /** Tonmodell laden (zwischengespeichert, die letzten paar Karten); leer, wenn nicht extrahiert. */
+    public synchronized Optional<MapModel> loadModel(int mapId) {
+        if (!models.containsKey(mapId) && models.size() >= 4) models.clear(); // Speicher: nur wenige Modelle halten
+        return models.computeIfAbsent(mapId, id -> {
+            Path p = dir.getParent().resolve("models").resolve(String.format("m%02d_%02d.bin.gz", (id >>> 24) & 0xFF, (id >>> 16) & 0xFF));
+            if (!Files.exists(p)) return Optional.empty();
+            try {
+                return Optional.of(MapModel.read(p));
+            } catch (IOException e) {
+                System.err.println("Modell nicht lesbar: " + p + ": " + e.getMessage());
+                return Optional.empty();
+            }
+        });
+    }
+
     /** Karte laden (zwischengespeichert); leer, wenn setup.bat sie nicht extrahiert hat. */
     public Optional<Map3D> load(int mapId) {
         return cache.computeIfAbsent(mapId, id -> {

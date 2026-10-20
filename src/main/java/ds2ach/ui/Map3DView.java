@@ -61,6 +61,15 @@ public final class Map3DView {
     private final VBox help = new VBox(2);
     private final List<Node> scaled = new ArrayList<>();
     private final ToggleButton flyBtn = new ToggleButton("Flugmodus (F)"), helpBtn = new ToggleButton("Steuerung (H)");
+    private final ToggleButton netBtn = new ToggleButton("Wege-Netz (N)");
+    private final javafx.scene.control.Slider cutSlider = new javafx.scene.control.Slider(1, 40, 6);
+    private final Label cutLabel = new Label();
+    private ds2ach.data.MapModel model;
+    private TriangleMesh modelMesh;
+    private int[] modelFaces;
+    private Node navGroup = new Group();
+    private String mapName = "";
+    private volatile long loadToken;
     private final Set<KeyCode> keys = EnumSet.noneOf(KeyCode.class);
     private final Robot robot = new Robot();
 
@@ -82,8 +91,8 @@ public final class Map3DView {
         camRig.getTransforms().addAll(target, yaw, pitch, dist);
         cam.setFieldOfView(50);
 
-        AmbientLight amb = new AmbientLight(Color.rgb(70, 66, 60));
-        DirectionalLight sun = new DirectionalLight(Color.rgb(175, 165, 150));
+        AmbientLight amb = new AmbientLight(Color.rgb(92, 87, 80));
+        DirectionalLight sun = new DirectionalLight(Color.rgb(190, 180, 165));
         sun.setDirection(new Point3D(0.35, 1, 0.5)); // von oben (JavaFX: y nach unten)
         Group scene3d = new Group(content, markers, camRig, amb, sun);
         sub = new SubScene(scene3d, 800, 600, true, SceneAntialiasing.BALANCED);
@@ -112,7 +121,12 @@ public final class Map3DView {
         flyBtn.setOnAction(e -> setFly(flyBtn.isSelected()));
         helpBtn.setSelected(true);
         helpBtn.setOnAction(e -> help.setVisible(helpBtn.isSelected()));
-        for (Node b : List.of(oblique, top, all, me, eyes, flyBtn, helpBtn)) b.setFocusTraversable(false);
+        for (Node b : List.of(oblique, top, all, me, eyes, flyBtn, helpBtn)) {
+            b.setFocusTraversable(false);
+            ((Region) b).setMinWidth(Region.USE_PREF_SIZE); // Knöpfe nie abschneiden, der Titel weicht aus
+        }
+        title.setMinWidth(0);
+        title.setTextOverrun(javafx.scene.control.OverrunStyle.ELLIPSIS);
 
         // Overlay: nur die Bedienelemente selbst fangen Mausereignisse. Abstandshalter und Texte sind
         // mausdurchlässig, sonst landen Ziehen und Mausrad nicht bei der 3D-Fläche (das war der Fehler).
@@ -139,7 +153,25 @@ public final class Map3DView {
         VBox bottom = new VBox(6, info, help);
         bottom.setPickOnBounds(false);
         bottom.setMouseTransparent(true);
-        VBox overlay = new VBox(bar, modeLabel, fill, bottom);
+        // Zweite Zeile: Schnitthöhe des Tonmodells und Wege-Netz
+        cutSlider.setPrefWidth(220);
+        cutSlider.setFocusTraversable(false);
+        cutSlider.setShowTickMarks(true);
+        cutSlider.setMajorTickUnit(10);
+        cutSlider.valueProperty().addListener((o, a, b) -> applyCut());
+        Tooltip.install(cutSlider, new Tooltip("Alles, was mehr als diese Höhe über dem Weg liegt, wird ausgeblendet (ganz rechts = kein Schnitt)"));
+        cutLabel.getStyleClass().add("map3d-mode");
+        cutLabel.setMinWidth(110);
+        cutLabel.setMouseTransparent(true);
+        cutLabel.setText("Schnitt: 6 m");
+        netBtn.setFocusTraversable(false);
+        netBtn.setOnAction(e -> navGroup.setVisible(netBtn.isSelected() || model == null));
+        HBox cutRow = new HBox(8, modeLabel, passThroughSpacer(), cutLabel, cutSlider, netBtn);
+        HBox.setHgrow(cutRow.getChildren().get(1), Priority.ALWAYS);
+        cutRow.setAlignment(Pos.CENTER_LEFT);
+        cutRow.setPadding(new Insets(0, 8, 0, 0));
+        cutRow.setPickOnBounds(false);
+        VBox overlay = new VBox(bar, cutRow, fill, bottom);
         overlay.setPadding(new Insets(0, 0, 8, 8));
         overlay.setPickOnBounds(false);
         root.getChildren().addAll(sub, overlay);
@@ -238,7 +270,9 @@ public final class Map3DView {
 
     /** Punkt unter der Maus: getroffenes Netz oder Marker, sonst Schnitt des Blickstrahls mit der Ebene des Drehpunkts. */
     private Point3D pointUnderCursor(double sx, double sy, PickResult pr) {
-        Point3D hit = pickedPoint(pr);
+        Point3D hit = pickedPoint(pr); // Marker
+        if (hit != null) return hit;
+        hit = navRaycast(sx, sy); // Boden (Wege-Netz)
         if (hit != null) return hit;
         Point3D eye = eye(), dir = rayDirection(sx, sy);
         if (Math.abs(dir.getY()) < 1e-4) return null;
@@ -284,6 +318,12 @@ public final class Map3DView {
                     helpBtn.setSelected(!helpBtn.isSelected());
                     help.setVisible(helpBtn.isSelected());
                 }
+                case N -> {
+                    netBtn.setSelected(!netBtn.isSelected());
+                    navGroup.setVisible(netBtn.isSelected() || model == null);
+                }
+                case PAGE_UP, ADD, PLUS -> cutSlider.setValue(cutSlider.getValue() + 2);
+                case PAGE_DOWN, SUBTRACT, MINUS -> cutSlider.setValue(cutSlider.getValue() - 2);
                 case ESCAPE -> {
                     if (pointerLocked) unlockPointer();
                     else if (fly) setFly(false);
@@ -359,6 +399,7 @@ public final class Map3DView {
             addHelp("Orbit", "Links ziehen = drehen · Rechts ziehen (oder Shift) = verschieben",
                     "Mausrad = zum Mauszeiger zoomen · Doppelklick = Punkt/Marker fokussieren",
                     "WASD = Drehpunkt verschieben · Marker anklicken = Details",
+                    "Schnitthöhe: Regler oder Bild auf/ab · N = Wege-Netz",
                     "F = Flugmodus · H = Hilfe aus/ein");
         }
     }
@@ -380,21 +421,140 @@ public final class Map3DView {
         return map;
     }
 
-    /** Neue Karte anzeigen (Netz einmal aufbauen). */
-    public void show(MapGeo.Map3D m, String name) {
+    /**
+     * Neue Karte anzeigen. Das Wege-Netz erscheint sofort, das Tonmodell wird im Hintergrund geladen und dann
+     * eingesetzt (große Gebiete haben über eine Million Dreiecke).
+     */
+    public void show(MapGeo.Map3D m, String name, java.util.function.Supplier<ds2ach.data.MapModel> modelLoader) {
         if (m == map) return;
         map = m;
+        mapName = name;
         content.getChildren().clear();
-        title.setText(name + "  ·  3D (Navigationsnetz)");
+        modelMesh = null;
+        modelFaces = null;
+        model = null;
         info.setVisible(false);
         if (m == null || m.netz() == null || m.netz().punkte().length == 0) {
             title.setText(name + "  ·  keine 3D-Daten (setup.bat ausführen)");
             return;
         }
-        content.getChildren().add(buildMesh(m.netz()));
+        navGroup = buildMesh(m.netz());
+        content.getChildren().add(navGroup);
+        title.setText(name + "  ·  Modell wird geladen …");
         applyBounds();
         fit();
         Platform.runLater(this::fit); // nochmal, sobald die 3D-Fläche ihre endgültige Größe hat
+        long token = ++loadToken;
+        Thread t = new Thread(() -> {
+            ds2ach.data.MapModel mm = modelLoader == null ? null : modelLoader.get();
+            Platform.runLater(() -> {
+                if (token != loadToken) return; // inzwischen andere Karte gewählt
+                if (mm == null) {
+                    title.setText(name + "  ·  Wege-Netz (kein Tonmodell, setup.bat ausführen)");
+                    return;
+                }
+                model = mm;
+                Node mv = buildModel(mm);
+                content.getChildren().add(0, mv);
+                applyCut();
+                navGroup.setVisible(netBtn.isSelected());
+            });
+        }, "modell-laden");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    /** Schnitthöhe anwenden: nur Dreiecke bis zur eingestellten Höhe über dem Weg zeigen (Liste ist danach sortiert). */
+    private void applyCut() {
+        if (model == null || modelMesh == null) return;
+        double cut = cutSlider.getValue();
+        boolean all = cut >= cutSlider.getMax() - 0.01;
+        int n = all ? model.triangleCount() : model.countUpTo(cut);
+        modelMesh.getFaces().setAll(modelFaces, 0, n * 6);
+        cutLabel.setText(all ? "Schnitt: aus" : String.format(Locale.ROOT, "Schnitt: %.0f m", cut));
+        title.setText(mapName + "  ·  Tonmodell");
+        Tooltip.install(title, new Tooltip(String.format(Locale.GERMANY, "%,d von %,d Dreiecken sichtbar", n, model.triangleCount())));
+    }
+
+    /** Tonmodell als ein großes Mesh; Färbung nach Höhe (dunkel unten, hell oben), Dreiecke werden per Schnitt begrenzt. */
+    private Node buildModel(ds2ach.data.MapModel mm) {
+        float[] v = mm.verts;
+        int n = v.length / 3;
+        float minY = Float.MAX_VALUE, maxY = -Float.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            minY = Math.min(minY, v[3 * i + 1]);
+            maxY = Math.max(maxY, v[3 * i + 1]);
+        }
+        // Färbung um den begehbaren Bereich zentrieren, sonst dominieren Klippen und Täler
+        float lo = (float) (center[1] - height), hi = (float) (center[1] + height * 1.5);
+        float[] pts = new float[n * 3], tex = new float[n * 2];
+        for (int i = 0; i < n; i++) {
+            pts[3 * i] = v[3 * i];
+            pts[3 * i + 1] = -v[3 * i + 1];
+            pts[3 * i + 2] = v[3 * i + 2];
+            tex[2 * i] = (float) Math.max(0.01, Math.min(0.99, (v[3 * i + 1] - lo) / Math.max(1, hi - lo)));
+            tex[2 * i + 1] = 0.5f;
+        }
+        int[] t = mm.tris;
+        modelFaces = new int[t.length * 2];
+        for (int i = 0; i < t.length; i++) {
+            modelFaces[2 * i] = t[i];
+            modelFaces[2 * i + 1] = t[i];
+        }
+        modelMesh = new TriangleMesh();
+        modelMesh.getPoints().setAll(pts);
+        modelMesh.getTexCoords().setAll(tex);
+        MeshView mv = new MeshView(modelMesh);
+        mv.setCullFace(CullFace.NONE);
+        mv.setMouseTransparent(true); // Treffer berechnen wir selbst (navRaycast), JavaFX-Picking wäre bei 1 Mio. Dreiecken zu langsam
+        PhongMaterial mat = new PhongMaterial();
+        mat.setDiffuseMap(clayGradient());
+        mat.setSpecularColor(Color.rgb(25, 22, 18));
+        mv.setMaterial(mat);
+        return mv;
+    }
+
+    /** Tonfarben: dunkles Braun unten, warmer Sand in Weghöhe, helles Beige oben. */
+    private static WritableImage clayGradient() {
+        WritableImage img = new WritableImage(256, 2);
+        Color[] stops = {Color.rgb(70, 55, 42), Color.rgb(150, 125, 95), Color.rgb(205, 185, 150), Color.rgb(235, 225, 205)};
+        for (int x = 0; x < 256; x++) {
+            double t = x / 255.0 * (stops.length - 1);
+            int i = Math.min(stops.length - 2, (int) t);
+            Color c = stops[i].interpolate(stops[i + 1], t - i);
+            img.getPixelWriter().setColor(x, 0, c);
+            img.getPixelWriter().setColor(x, 1, c);
+        }
+        return img;
+    }
+
+    /**
+     * Strahl durch den Bildschirmpunkt gegen das Wege-Netz schneiden (Möller-Trumbore). Das Netz ist klein
+     * (wenige tausend Dreiecke), daher schnell genug für jedes Mausrad-Ereignis.
+     */
+    private Point3D navRaycast(double sx, double sy) {
+        if (map == null || map.netz() == null) return null;
+        Point3D o = eye(), d = rayDirection(sx, sy);
+        double[] p = map.netz().punkte();
+        int[] t = map.netz().dreiecke();
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i + 2 < t.length; i += 3) {
+            double ax = p[3 * t[i]], ay = -p[3 * t[i] + 1], az = p[3 * t[i] + 2];
+            double e1x = p[3 * t[i + 1]] - ax, e1y = -p[3 * t[i + 1] + 1] - ay, e1z = p[3 * t[i + 1] + 2] - az;
+            double e2x = p[3 * t[i + 2]] - ax, e2y = -p[3 * t[i + 2] + 1] - ay, e2z = p[3 * t[i + 2] + 2] - az;
+            double px = d.getY() * e2z - d.getZ() * e2y, py = d.getZ() * e2x - d.getX() * e2z, pz = d.getX() * e2y - d.getY() * e2x;
+            double det = e1x * px + e1y * py + e1z * pz;
+            if (Math.abs(det) < 1e-9) continue;
+            double inv = 1 / det, tx = o.getX() - ax, ty = o.getY() - ay, tz = o.getZ() - az;
+            double u = (tx * px + ty * py + tz * pz) * inv;
+            if (u < 0 || u > 1) continue;
+            double qx = ty * e1z - tz * e1y, qy = tz * e1x - tx * e1z, qz = tx * e1y - ty * e1x;
+            double w = (d.getX() * qx + d.getY() * qy + d.getZ() * qz) * inv;
+            if (w < 0 || u + w > 1) continue;
+            double dist2 = (e2x * qx + e2y * qy + e2z * qz) * inv;
+            if (dist2 > 0 && dist2 < best) best = dist2;
+        }
+        return best == Double.MAX_VALUE ? null : o.add(d.multiply(best));
     }
 
     /** Marker neu setzen: wird bei jedem Spielstand bzw. jeder Änderung aufgerufen. */
@@ -609,7 +769,7 @@ public final class Map3DView {
     /** Marker wachsen beim Herauszoomen mit, damit sie sichtbar bleiben. */
     private void rescaleMarkers() {
         double d = fly ? flySpeed * 2 : -dist.getZ();
-        double s = clamp(d / 90, 0.8, 6);
+        double s = clamp(d / 45, 1, 14); // im Tonmodell müssen Marker deutlich größer sein als auf dem Wege-Netz
         for (Node n : scaled) {
             n.setScaleX(s);
             n.setScaleY(s);
@@ -660,7 +820,7 @@ public final class Map3DView {
         mat.setDiffuseMap(heightGradient());
         mat.setSpecularColor(Color.rgb(20, 20, 20));
         mv.setMaterial(mat);
-        mv.setOnMouseClicked(e -> info.setVisible(false));
+        mv.setMouseTransparent(true); // Treffer per navRaycast
         // Dunkle Kanten machen Wege und Stufen lesbarer
         MeshView edges = new MeshView(mesh);
         edges.setDrawMode(DrawMode.LINE);

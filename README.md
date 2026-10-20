@@ -43,6 +43,15 @@ Kartenlayout (`.msb`), das Navigationsnetz (`.ngp`) und zwei Params (Objekt-Inst
 - Ergebnis sind 28 Dateien `extracted/maps/mAA_BB.json` (zusammen ca. 4 MB) mit begehbarer Fläche, Leuchtfeuern,
   Item-Fundorten und Gebietsübergängen samt Positionen. Das dauert etwa eine Sekunde.
 
+**Tonmodelle (echte Level-Geometrie):** Zuletzt liest das Setup pro Karte die Kartenmodelle (`model/map/*.mapbhd/.mapbdt`,
+FLVER-Modelle) und setzt sie laut Kartenlayout zusammen:
+- Weggelassen werden Himmel und ferne Kulisse (Material `NoLit`), Schattenkörper, Leuchteffekte, Gras, Blätter,
+  Wasser, riesige Kulissen-Platten und alles weit weg von begehbarer Fläche.
+- Punkte näher als 15 cm werden zusammengelegt. Jedes Dreieck bekommt seine Höhe über dem nächsten Weg (für die
+  Schnitthöhe), gespeichert wird bis 40 m darüber.
+- Ergebnis: `extracted/models/mAA_BB.bin.gz`, 28 Dateien, zusammen ca. 140 MB. Je Gebiet sind es 80.000 bis
+  1,3 Mio. Dreiecke, das Setup braucht dafür etwa 30 Sekunden.
+
 ## Spielstand
 
 - Ort: `%APPDATA%\DarkSoulsII\<SteamID>\DS2SOFS0000.sl2`. Die App findet die Datei selbst. Bei mehreren Steam-IDs
@@ -109,8 +118,12 @@ Bosse, Voraussetzungen). Unsichere Einträge sind dort mit `unsicher` markiert u
 
 Im Kartenfenster schaltet **3D** auf die Karte des gewählten Gebiets um, ohne Auswahl auf die Karte, auf der du stehst.
 
-- **Geometrie:** das Navigationsnetz des Spiels, also alle begehbaren Flächen, nach Höhe eingefärbt (tief = grün,
-  hoch = hell). Wände und Gebäude fehlen, das ist ein „3D-Grundriss“ der Wege.
+- **Geometrie:** das echte Level als **Tonmodell** (einfarbig, nach Höhe schattiert) aus deinen Spieldateien. Es
+  wird im Hintergrund geladen, bis dahin siehst du das Wege-Netz.
+- **Schnitthöhe:** Der Regler oben rechts (oder Bild auf/ab) blendet alles aus, was mehr als x Meter über dem Weg
+  liegt, wie bei einem Puppenhaus. Standard 6 m, ganz rechts = kein Schnitt. So verdecken Bäume, Dächer und
+  Felssäulen die Wege nicht.
+- **Wege-Netz (N):** blendet zusätzlich das Navigationsnetz (begehbare Flächen) ein.
 - **Marker:**
   - Items: grün = eingesammelt, orange = offen, blau = unbekannt. Würfel = liegendes Item, breiter Kasten = Truhe,
     goldener Ring = Achievement-relevant.
@@ -192,6 +205,7 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 | Spielerposition | aus dem Spielstand (letztes Speichern), mit Majula und Forest gegengeprüft |
 | Gebietsübergänge | Event-Bereiche mit Zielkarte. In Majula vollständig, auf manchen Karten fehlen welche (anders kodiert). |
 | Boss-Arenen in 3D | noch nicht erkannt |
+| Tonmodell | alle 28 Karten. Platzierung geprüft: unter über 90 % der Wege liegt der Modellboden (Test). Wasser, Gras und Blätter fehlen bewusst. |
 | NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
 | Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
