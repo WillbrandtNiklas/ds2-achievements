@@ -4,14 +4,14 @@ Checkliste für einen Durchgang in **Dark Souls II: Scholar of the First Sin** (
 **Spielstand**, nicht aus deinen Steam-Achievements. Die App liest nur. Sie verändert weder den Spielstand noch den
 Spielspeicher.
 
-Stand: **Weltkarte Stufe 2** (Pergamentkarte und Items pro Gebiet). Stufe 3 (3D-Karten) und der Item-Geber folgen.
+Stand: **Weltkarte Stufe 3** (3D-Karten mit Spielerposition). Der Item-Geber folgt.
 
 Alle Spielnamen (Gebiete, Bosse, NPCs, Items, Zauber, Bünde) sind englisch wie im Spiel, Erklärungen deutsch.
 
 ## Starten
 
 1. Java 21 oder neuer muss installiert sein (`java -version`).
-2. Einmalig `setup.bat` ausführen: liest die Item-Fundorte aus deiner Spielinstallation (siehe „Setup“).
+2. Einmalig `setup.bat` ausführen: liest Item-Fundorte und Karten aus deiner Spielinstallation (siehe „Setup“).
 3. Doppelklick auf `start.bat`.
 
 Beim ersten Start baut `build.bat` die App automatisch. Dafür wird Maven gesucht: im PATH, in der Umgebungsvariable
@@ -32,8 +32,27 @@ ausführen. Für Änderungen an der JSON-Datei reicht ein Neustart der App.
 - Ändert sich die Spieldatei (z. B. durch ein Update oder einen Mod), weist die App darauf hin. Dann `setup.bat` neu
   ausführen.
 
-Liegen die Params in deiner Installation nicht als lose Dateien vor, bricht das Setup mit einem Hinweis ab. Das
-Entpacken aus den Spielarchiven gehört zu Stufe 3.
+Liegen die Params in deiner Installation nicht als lose Dateien vor, wird die Item-Liste übersprungen.
+
+**Karten (für die 3D-Ansicht):** Danach liest das Setup aus dem Spielarchiv `GameDataEbl.bdt` pro Karte das
+Kartenlayout (`.msb`), das Navigationsnetz (`.ngp`) und zwei Params (Objekt-Instanzen, Event-Bereiche):
+- Der Archiv-Index (`.bhd`) ist RSA-verschlüsselt. Entschlüsselt wird mit dem öffentlichen Schlüssel
+  `GameDataKeyCode.pem` aus dem Spielordner. Die Dateien selbst sind teilweise AES-verschlüsselt, die Schlüssel stehen
+  im Index. Das Format ist nachgebaut nach den Open-Source-Projekten UXM und SoulsFormats.
+- Es wird nur gelesen, im Spielordner wird nichts entpackt oder verändert.
+- Ergebnis sind 28 Dateien `extracted/maps/mAA_BB.json` (zusammen ca. 4 MB) mit begehbarer Fläche, Leuchtfeuern,
+  Item-Fundorten und Gebietsübergängen samt Positionen. Das dauert etwa eine Sekunde.
+
+**Kartenmodelle mit Texturen (echte Level-Geometrie):** Zuletzt liest das Setup pro Karte die Kartenmodelle
+(`model/map/*.mapbhd/.mapbdt`, FLVER-Modelle) samt Farbtexturen (`model/map/t*.tpfbhd/.tpfbdt`, DXT1/DXT5) und setzt
+sie laut Kartenlayout zusammen:
+- Weggelassen werden Himmel und ferne Kulisse (Material `NoLit`), Schattenkörper, Leuchteffekte, Gras, Wasser,
+  riesige Kulissen-Platten und alles weit weg von begehbarer Fläche. Blätter bleiben drin (mit Transparenz).
+- Texturen: nur die Farbtextur je Material, ab der Mipmap-Stufe mit höchstens 512 px. Normal-, Glanz- und
+  Lichtkarten fehlen, das Licht in der Ansicht ist einfach gehalten.
+- Jedes Dreieck bekommt seine Höhe über dem nächsten Weg (für die Schnitthöhe), gespeichert wird bis 40 m darüber.
+- Ergebnis: `extracted/models/mAA_BB.bin.gz`, 28 Dateien, zusammen ca. 510 MB. Je Gebiet sind es 100.000 bis
+  2,2 Mio. Dreiecke und bis zu 140 Texturen, das Setup braucht dafür gut eine Minute.
 
 ## Spielstand
 
@@ -82,7 +101,7 @@ dem Spielstand, genau wie die Checkliste. Oben schaltest du zwischen **Karte** u
 - Positionen, Größe und Gelände stehen in `data/world.json` (Felder `karte` und `gelaende`) und lassen sich anpassen.
 
 **Diagramm:**
-- **Gebiete** sind Kästen, **Verbindungen** Linien. Mausrad zoomt, Ziehen verschiebt, „Ansicht zurücksetzen“ passt alles
+- **Gebiete** sind Kästen, **Verbindungen** Linien. Mausrad zoomt zum Mauszeiger, Ziehen verschiebt, „Ansicht zurücksetzen“ passt alles
   ins Fenster. DLC-Gebiete haben einen gestrichelten Rand und lassen sich ausblenden.
 - **Farben:** Gold mit dickem Rand = aktuelles Gebiet, braun = besucht, dunkel = noch nicht besucht.
 - In jedem Kasten steht, wie viele **Leuchtfeuer** entzündet und **Bosse** besiegt sind.
@@ -96,6 +115,40 @@ dem Spielstand, genau wie die Checkliste. Oben schaltest du zwischen **Karte** u
 Alle Gebiets- und Verbindungsdaten stehen in `data/world.json` und sind frei editierbar (Position, Leuchtfeuer,
 Bosse, Voraussetzungen). Unsichere Einträge sind dort mit `unsicher` markiert und erscheinen in der App orange als
 „Bitte prüfen“.
+
+## 3D-Ansicht
+
+Im Kartenfenster schaltet **3D** auf die Karte des gewählten Gebiets um, ohne Auswahl auf die Karte, auf der du stehst.
+
+- **Geometrie:** das echte Level mit den Farbtexturen aus deinen Spieldateien. Es wird im Hintergrund geladen
+  (große Gebiete einige Sekunden), bis dahin siehst du das Wege-Netz.
+- **Texturen (T):** schaltet auf ein einfarbiges Tonmodell um, darin sind Formen oft leichter zu erkennen.
+- **Schnitthöhe:** Der Regler oben rechts (oder Bild auf/ab) blendet alles aus, was mehr als x Meter über dem Weg
+  liegt, wie bei einem Puppenhaus. Standard 6 m, ganz rechts = kein Schnitt. So verdecken Bäume, Dächer und
+  Felssäulen die Wege nicht.
+- **Wege-Netz (N):** blendet zusätzlich das Navigationsnetz (begehbare Flächen) ein.
+- **Marker:**
+  - Items: grün = eingesammelt, orange = offen, blau = unbekannt. Würfel = liegendes Item, breiter Kasten = Truhe,
+    goldener Ring = Achievement-relevant.
+  - Leuchtfeuer: Flamme, leuchtend und mit Licht, wenn entzündet.
+  - Lila Säulen: Übergänge zu anderen Gebieten.
+- **Spieler:** cyanfarbene Figur mit Blickrichtung und hohem Lichtstrahl, an der Position aus dem Spielstand.
+- **Zwei Steuerungsmodi**, umschalten mit **F** oder dem Knopf „Flugmodus“. **H** blendet die Steuerungshilfe unten
+  links aus und ein.
+  - **Orbit (Standard):** links ziehen = drehen, rechts ziehen (oder Shift + links) = verschieben, Mausrad = zum
+    Mauszeiger zoomen (am kleinsten Abstand geht es weiter durchs Level), Doppelklick auf Boden oder Marker =
+    dorthin fokussieren, WASD = Drehpunkt verschieben. Kleinster/größter Abstand und Geschwindigkeiten werden aus der
+    Größe des Gebiets berechnet.
+  - **Flugmodus:** WASD = bewegen, Q/E = runter/hoch, Shift = schneller. Klick in die Ansicht fängt die Maus
+    (Mauszeiger verschwindet), dann dreht die Maus den Blick. Esc gibt die Maus frei, ein zweites Esc wechselt zurück
+    zum Orbit. Das Mausrad ändert die Fluggeschwindigkeit.
+- **Knöpfe:** „Schräg“, „Draufsicht“, „Ganzes Gebiet“, „Zum Spieler“, „Vom Spieler aus“ (Flugmodus in Augenhöhe an
+  deiner gespeicherten Position). Beim Laden eines Gebiets wird die Kamera automatisch so gesetzt, dass das ganze
+  Gebiet sichtbar ist. Ein Klick auf einen Marker zeigt Details.
+
+**Wie „live“ ist die Spielerposition?** Sie kommt aus dem Spielstand, nicht aus dem Spielspeicher (das ist bewusst
+ausgeschlossen). Sie aktualisiert sich also bei jedem Speichern des Spiels: beim Aufheben von Items, an Leuchtfeuern,
+bei Gebietswechseln und regelmäßig zwischendurch. Dazwischen steht die Figur dort, wo zuletzt gespeichert wurde.
 
 ## Items pro Gebiet
 
@@ -151,6 +204,12 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 | Geöffnete Türen und Abkürzungen | noch nicht erkannt. Die Karte zeigt nur, ob du die Voraussetzung erfüllst. |
 | Item-Fundorte | aus deiner Installation (`setup.bat`), vollständig |
 | Aufgehobene Items | eindeutige Items über das Inventar. Verbrauchsgüter noch nicht, da die Aufheben-Flags fehlen. |
+| 3D-Positionen von Items und Leuchtfeuern | aus dem Kartenlayout. Auf allen Karten liegen sie im Median unter 1 m vom Navigationsnetz entfernt. |
+| Spielerposition | aus dem Spielstand (letztes Speichern), mit Majula und Forest gegengeprüft |
+| Gebietsübergänge | Event-Bereiche mit Zielkarte. In Majula vollständig, auf manchen Karten fehlen welche (anders kodiert). |
+| Boss-Arenen in 3D | noch nicht erkannt |
+| Kartenmodell | alle 28 Karten. Platzierung geprüft: unter über 90 % der Wege liegt der Modellboden (Test). Wasser und Gras fehlen bewusst. |
+| Texturen | Farbtextur je Material, 512 px. Gefunden für fast alle Materialien (z. B. Forest 123 von 126), der Rest erscheint in Tonfarbe. Ohne Normal- und Lichtkarten wirkt es flacher als im Spiel. |
 | NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
 | Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
@@ -193,5 +252,6 @@ java SaveProbe.java diff snapshots\A.sl2 snapshots\B.sl2
 - Leuchtfeuer-IDs und -Namen: [Atvaarks DS2 ID-Liste](https://gist.github.com/Atvaark/69c6dcca10b226895a12)
 - Gebiete, Bosse, Leuchtfeuer und Schlüssel-Items pro Gebiet: [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)
 - Reihenfolge der Boss-Zähler: [FrankvdStam/SoulSplitter](https://github.com/FrankvdStam/SoulSplitter)
+- Archiv- und Kartenformate (BHD5, MSB2, NGP): [UXM](https://github.com/JKAnderson/UXM), [SoulsFormats](https://github.com/JKAnderson/SoulsFormats)
 - Guides (eigene Zusammenfassung): [PSNProfiles Dark Souls II Trophy Guide](https://psnprofiles.com/guide/357-dark-souls-ii-trophy-guide)
 - NPC-Details für SotFS (Lucatiel, Benhart): [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)

@@ -3,6 +3,7 @@ package ds2ach.ui;
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
 import ds2ach.data.Items;
+import ds2ach.data.MapGeo;
 import ds2ach.logic.ItemStatus;
 import ds2ach.data.World;
 import ds2ach.data.World.Area;
@@ -41,12 +42,18 @@ public final class MapWindow {
     private final Stage stage = new Stage();
     private final Pane content = new Pane();
     private final Group zoomGroup = new Group(content);
+    private final javafx.scene.transform.Translate pan = new javafx.scene.transform.Translate();
+    private final javafx.scene.transform.Scale zoom = new javafx.scene.transform.Scale(1, 1, 0, 0);
     private final Pane viewport = new Pane(zoomGroup);
     private final VBox side = new VBox(8);
     private final Label header = new Label();
     private final CheckBox showDlc = new CheckBox("DLC-Gebiete zeigen");
     private final ToggleButton viewMap = new ToggleButton("Karte"), viewDiagram = new ToggleButton("Diagramm");
     private final ParchmentView parchment;
+    private final ToggleButton view3d = new ToggleButton("3D");
+    private final MapGeo geo;
+    private final Map3DView map3d;
+    private BorderPane rootPane;
     private final Items items;
     private final Consumer<Long> onToggleLot;
     private final VBox itemsBox = new VBox(6);
@@ -63,13 +70,15 @@ public final class MapWindow {
     private String selected;
     private double dragX, dragY;
 
-    public MapWindow(AchievementDb db, Warnings warnings, Items items, String stylesheet, Consumer<Long> onToggleLot) {
+    public MapWindow(AchievementDb db, Warnings warnings, Items items, MapGeo geo, String stylesheet, Consumer<Long> onToggleLot) {
         this.db = db;
         this.world = db.world;
         this.warnings = warnings;
         this.items = items;
         this.onToggleLot = onToggleLot;
         this.parchment = new ParchmentView(world);
+        this.geo = geo;
+        this.map3d = new Map3DView(world);
         // Items mit Achievement-Bezug: Bedingungs-Items und alle Zauber der Master-Achievements
         for (Achievement a : db.achievements)
             if (a.bedingung() != null && a.bedingung().ids() != null)
@@ -79,12 +88,19 @@ public final class MapWindow {
         ToggleGroup views = new ToggleGroup();
         viewMap.setToggleGroup(views);
         viewDiagram.setToggleGroup(views);
+        view3d.setToggleGroup(views);
         viewMap.setSelected(true);
         views.selectedToggleProperty().addListener((o, a, b) -> {
             if (b == null) {
                 ((ToggleButton) a).setSelected(true);
                 return;
             }
+            if (b == view3d) {
+                rootPane.setCenter(map3d.node());
+                show3d();
+                return;
+            }
+            rootPane.setCenter(viewport);
             redraw();
             resetView();
         });
@@ -111,7 +127,7 @@ public final class MapWindow {
         });
         Button reset = new Button("Ansicht zurücksetzen");
         reset.setOnAction(e -> resetView());
-        HBox top = new HBox(12, header, spacer(), legend(), viewMap, viewDiagram, showDlc, reset);
+        HBox top = new HBox(12, header, spacer(), legend(), viewMap, viewDiagram, view3d, showDlc, reset);
         top.setAlignment(Pos.CENTER_LEFT);
         top.setPadding(new Insets(8, 12, 8, 12));
         top.getStyleClass().add("map-top");
@@ -121,19 +137,27 @@ public final class MapWindow {
         clip.widthProperty().bind(viewport.widthProperty());
         clip.heightProperty().bind(viewport.heightProperty());
         viewport.setClip(clip);
+        // Bildschirm = pan + zoom * Karte; Skalierung ab der linken oberen Ecke, damit Zoomen zur Maus exakt rechenbar ist
+        zoomGroup.getTransforms().setAll(pan, zoom);
         viewport.setOnScroll(e -> {
-            double f = e.getDeltaY() > 0 ? 1.12 : 1 / 1.12;
-            double s = Math.max(0.3, Math.min(3, zoomGroup.getScaleX() * f));
-            zoomGroup.setScaleX(s);
-            zoomGroup.setScaleY(s);
+            if (e.getDeltaY() == 0) return;
+            double f = e.getDeltaY() > 0 ? 1.15 : 1 / 1.15;
+            double s = zoom.getX(), ns = Math.max(0.25, Math.min(6, s * f));
+            // Kartenpunkt unter der Maus bleibt unter der Maus
+            double px = (e.getX() - pan.getX()) / s, py = (e.getY() - pan.getY()) / s;
+            zoom.setX(ns);
+            zoom.setY(ns);
+            pan.setX(e.getX() - px * ns);
+            pan.setY(e.getY() - py * ns);
+            e.consume();
         });
         viewport.setOnMousePressed(e -> {
-            dragX = e.getSceneX() - zoomGroup.getTranslateX();
-            dragY = e.getSceneY() - zoomGroup.getTranslateY();
+            dragX = e.getX() - pan.getX();
+            dragY = e.getY() - pan.getY();
         });
         viewport.setOnMouseDragged(e -> {
-            zoomGroup.setTranslateX(e.getSceneX() - dragX);
-            zoomGroup.setTranslateY(e.getSceneY() - dragY);
+            pan.setX(e.getX() - dragX);
+            pan.setY(e.getY() - dragY);
         });
 
         side.setPadding(new Insets(12));
@@ -156,6 +180,7 @@ public final class MapWindow {
         tabs.setPrefWidth(400);
 
         BorderPane root = new BorderPane(viewport, top, tabs, null, null);
+        rootPane = root;
         Scene scene = new Scene(root, 1500, 900);
         scene.getStylesheets().add(stylesheet);
         stage.setScene(scene);
@@ -187,6 +212,55 @@ public final class MapWindow {
         selected = areaId;
         redraw();
         showDetails();
+        if (view3d.isSelected()) show3d();
+    }
+
+    /** Testhilfe: in der 3D-Ansicht auf den Spieler zoomen. */
+    public void focusPlayer3d() {
+        map3d.focusPlayer();
+    }
+
+    /** Testhilfe: prüft, ob Mausereignisse die 3D-Fläche erreichen und die Kamera bewegen. */
+    public void inputCheck3d() {
+        System.out.println("Abfangende Elemente über der 3D-Fläche: " + map3d.mouseBlockers());
+        System.out.print(map3d.inputSelfTest());
+    }
+
+    /** Testhilfe: 3D-Ansicht aus Sicht des Spielers. */
+    public void playerView3d() {
+        map3d.playerView();
+    }
+
+    /** Testhilfe: Ansicht "karte", "diagramm" oder "3d" wählen. */
+    public void selectView(String v) {
+        (v.equalsIgnoreCase("3d") ? view3d : v.equalsIgnoreCase("diagramm") ? viewDiagram : viewMap).setSelected(true);
+    }
+
+    /** 3D-Karte des gewählten Gebiets (ohne Auswahl: Karte des Spielers) anzeigen und Marker aktualisieren. */
+    private void show3d() {
+        MapGeo.Map3D m = null;
+        String name = "Keine Karte";
+        Area a = selected == null ? null : world.area(selected);
+        if (a != null && a.karten() != null)
+            for (String k : a.karten()) {
+                var opt = geo == null ? java.util.Optional.<MapGeo.Map3D>empty() : geo.load(AchievementDb.parseId(k));
+                if (opt.isPresent()) {
+                    m = opt.get();
+                    name = world.mapName(m.mapId());
+                    break;
+                }
+            }
+        if (m == null && current != null && geo != null) {
+            var opt = geo.load(current.mapId());
+            if (opt.isPresent()) {
+                m = opt.get();
+                name = world.mapName(m.mapId());
+            }
+        }
+        if (m == null && a != null) name = a.name();
+        final MapGeo.Map3D shown = m;
+        map3d.show(m, name, shown == null || geo == null ? null : () -> geo.loadModel(shown.mapId()).orElse(null));
+        map3d.update(current, items, manualLots, achItemIds);
     }
 
     /** Wird bei jedem neuen Spielstand bzw. jeder Änderung in der Checkliste aufgerufen. */
@@ -202,6 +276,7 @@ public final class MapWindow {
             world.areasOnMap(c.mapId()).stream().findFirst().ifPresent(a -> selected = a.id());
         redraw();
         showDetails();
+        if (view3d.isSelected()) show3d();
     }
 
     /** Ganze Karte ins Fenster einpassen. */
@@ -218,12 +293,12 @@ public final class MapWindow {
             }
             double vw = viewport.getWidth() > 0 ? viewport.getWidth() : 1100, vh = viewport.getHeight() > 0 ? viewport.getHeight() : 840;
             double s = Math.min(1.2, Math.min((vw - 30) / (maxX + 20), (vh - 30) / (maxY + 20)));
-            zoomGroup.setScaleX(s);
-            zoomGroup.setScaleY(s);
-            // Skalierung wirkt um die Mitte der Gruppe: Verschiebung so wählen, dass die linke obere Ecke bei 10/10 liegt
-            double cw = content.getBoundsInLocal().getWidth(), ch = content.getBoundsInLocal().getHeight();
-            zoomGroup.setTranslateX(10 - (cw - cw * s) / 2 - content.getBoundsInLocal().getMinX() * s);
-            zoomGroup.setTranslateY(10 - (ch - ch * s) / 2 - content.getBoundsInLocal().getMinY() * s);
+            zoom.setX(s);
+            zoom.setY(s);
+            // Karte mittig einpassen, linke obere Ecke mindestens bei 10/10
+            double minX = content.getBoundsInLocal().getMinX(), minY = content.getBoundsInLocal().getMinY();
+            pan.setX(Math.max(10, (vw - maxX * s) / 2) - minX * s);
+            pan.setY(Math.max(10, (vh - maxY * s) / 2) - minY * s);
         });
     }
 

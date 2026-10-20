@@ -28,7 +28,7 @@ class ItemsTest {
     }
 
     static CharacterSlot slot(Map<Integer, Integer> inv) {
-        return new CharacterSlot(1, "T", 1, 0, 1, 0x0A020000, inv, Map.of(), Set.of(), Set.of(), "x");
+        return new CharacterSlot(1, "T", 1, 0, 1, 0x0A020000, inv, Map.of(), Set.of(), Set.of(), "x", new float[4]);
     }
 
     @Test

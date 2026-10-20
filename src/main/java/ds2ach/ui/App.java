@@ -3,6 +3,7 @@ package ds2ach.ui;
 import ds2ach.data.AchievementDb;
 import ds2ach.data.AchievementDb.Achievement;
 import ds2ach.data.Items;
+import ds2ach.data.MapGeo;
 import ds2ach.logic.Evaluator;
 import ds2ach.logic.Warnings;
 import ds2ach.save.Backups;
@@ -100,6 +101,22 @@ public class App extends Application {
         if (getParameters().getUnnamed().contains("--map") || named.containsKey("mapsnapshot")) openMap();
         if (named.containsKey("select")) openMap().select(named.get("select"));
         if (named.containsKey("tab")) openMap().selectTab(named.get("tab"));
+        if (named.containsKey("view")) openMap().selectView(named.get("view"));
+        if (getParameters().getUnnamed().contains("--focus-player")) { // erst nach dem Einlesen des Spielstands
+            javafx.animation.PauseTransition f = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(4));
+            f.setOnFinished(e -> openMap().focusPlayer3d());
+            f.play();
+        }
+        if (getParameters().getUnnamed().contains("--player-view")) {
+            javafx.animation.PauseTransition f = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(4));
+            f.setOnFinished(e -> openMap().playerView3d());
+            f.play();
+        }
+        if (getParameters().getUnnamed().contains("--input-check")) {
+            javafx.animation.PauseTransition f = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(4));
+            f.setOnFinished(e -> openMap().inputCheck3d());
+            f.play();
+        }
         String snap = named.get("snapshot"), mapSnap = named.get("mapsnapshot");
         if (snap != null || mapSnap != null) {
             javafx.animation.PauseTransition t = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(6));
@@ -114,7 +131,7 @@ public class App extends Application {
 
     private MapWindow openMap() {
         if (mapWindow == null)
-            mapWindow = new MapWindow(db, warnings, items, Objects.requireNonNull(App.class.getResource("style.css")).toExternalForm(),
+            mapWindow = new MapWindow(db, warnings, items, new MapGeo(appDir), Objects.requireNonNull(App.class.getResource("style.css")).toExternalForm(),
                     this::toggleLot);
         mapWindow.show();
         render();
