@@ -46,6 +46,7 @@ public class App extends Application {
     private Warnings warnings;
     private final VBox warnBox = new VBox(4);
     private boolean showAllWarnings;
+    private MapWindow mapWindow;
 
     private final ComboBox<String> slotBox = new ComboBox<>();
     private final Label charLabel = new Label("–"), ngLabel = new Label("–"), areaLabel = new Label("–"),
@@ -65,7 +66,7 @@ public class App extends Application {
             return;
         }
         evaluator = new Evaluator(db.gameData);
-        warnings = new Warnings(db.gameData);
+        warnings = new Warnings(db.gameData, db.world);
         state = UserState.load(appDir.resolve("state.json"));
         backups = new Backups(appDir.resolve("backups"));
 
@@ -86,15 +87,29 @@ public class App extends Application {
             expanded.addAll(List.of(expand.split(",")));
             render();
         }
-        String snap = getParameters().getNamed().get("snapshot");
-        if (snap != null) {
+        // Testhilfen: --map öffnet die Weltkarte, --select=gebiet wählt ein Gebiet aus,
+        // --mapsnapshot=datei.png speichert nach 6 s ein Bild der Weltkarte
+        Map<String, String> named = getParameters().getNamed();
+        if (getParameters().getUnnamed().contains("--map") || named.containsKey("mapsnapshot")) openMap();
+        if (named.containsKey("select")) openMap().select(named.get("select"));
+        String snap = named.get("snapshot"), mapSnap = named.get("mapsnapshot");
+        if (snap != null || mapSnap != null) {
             javafx.animation.PauseTransition t = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(6));
             t.setOnFinished(e -> {
-                writePng(stage.getScene().snapshot(null), Path.of(snap));
+                if (snap != null) writePng(stage.getScene().snapshot(null), Path.of(snap));
+                if (mapSnap != null) writePng(mapWindow.stage().getScene().snapshot(null), Path.of(mapSnap));
                 Platform.exit();
             });
             t.play();
         }
+    }
+
+    private MapWindow openMap() {
+        if (mapWindow == null)
+            mapWindow = new MapWindow(db, warnings, Objects.requireNonNull(App.class.getResource("style.css")).toExternalForm());
+        mapWindow.show();
+        render();
+        return mapWindow;
     }
 
     private static void writePng(javafx.scene.image.WritableImage img, Path out) {
@@ -134,9 +149,18 @@ public class App extends Application {
             stage.setAlwaysOnTop(state.alwaysOnTop);
             state.save();
         });
-        HBox top = new HBox(10, new Label("Slot:"), slotBox, onTop);
-        top.setAlignment(Pos.CENTER_LEFT);
+        Button mapButton = new Button("Weltkarte");
+        mapButton.setOnAction(e -> openMap());
+        Label slotLabel = new Label("Slot:");
+        slotLabel.setMinWidth(Region.USE_PREF_SIZE);
+        HBox slotRow = new HBox(10, slotLabel, slotBox);
+        slotRow.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(slotBox, Priority.ALWAYS);
+        Region gap = new Region();
+        HBox.setHgrow(gap, Priority.ALWAYS);
+        HBox buttonRow = new HBox(10, mapButton, gap, onTop);
+        buttonRow.setAlignment(Pos.CENTER_LEFT);
+        VBox top = new VBox(6, slotRow, buttonRow);
 
         GridPane info = new GridPane();
         info.setHgap(10);
@@ -266,7 +290,7 @@ public class App extends Application {
             // Wert 1 = NG ist bestaetigt (Fortnite), hoehere Werte als NG+ sind abgeleitet
             ngLabel.setText(current.ngValue() <= 1 ? "NG"
                     : "NG+" + (current.ngValue() - 1) + " (Wert " + current.ngValue() + ", NG+ noch unbestätigt)");
-            areaLabel.setText(db.gameData.mapName(current.mapId()));
+            areaLabel.setText(db.world.mapName(current.mapId()));
             String last = state.character(slotKey(current)).lastBoss;
             bossLabel.setText(last != null ? db.gameData.bossName(last) + " (?)"
                     : current.bossKills().size() + " Bosse erkannt (?), letzter seit Start der App: –");
@@ -303,6 +327,16 @@ public class App extends Application {
         }
         progress.setProgress(total == 0 ? 0 : (double) done / total);
         progressLabel.setText(done + " / " + total + " erledigt" + (hiddenCount > 0 ? "  (" + hiddenCount + " ausgeblendet)" : ""));
+
+        if (mapWindow != null) {
+            List<MapWindow.AchView> views = new ArrayList<>();
+            for (Achievement a : db.achievements) {
+                if (cs.hidden.contains(a.id())) continue;
+                boolean d = effectiveDone(a, results.get(a.id()), cs);
+                views.add(new MapWindow.AchView(a, d ? "erledigt" : missed.containsKey(a.id()) ? "verpasst (?)" : "offen"));
+            }
+            mapWindow.update(current, views, hints);
+        }
     }
 
     private static boolean effectiveDone(Achievement a, Evaluator.Result r, UserState.CharState cs) {

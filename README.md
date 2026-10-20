@@ -4,7 +4,9 @@ Checkliste für einen Durchgang in **Dark Souls II: Scholar of the First Sin** (
 **Spielstand**, nicht aus deinen Steam-Achievements. Die App liest nur. Sie verändert weder den Spielstand noch den
 Spielspeicher.
 
-Stand: **Schritt 3 (Warnungen)**. Der Item-Geber (Schritt 4) folgt.
+Stand: **Weltkarte Stufe 1** (Verbindungsgraph). Stufe 2 (Items pro Gebiet), Stufe 3 (3D-Karten) und der Item-Geber folgen.
+
+Alle Spielnamen (Gebiete, Bosse, NPCs, Items, Zauber, Bünde) sind englisch wie im Spiel, Erklärungen deutsch.
 
 ## Starten
 
@@ -47,6 +49,26 @@ Die Warnungen stehen pro Achievement in `data/achievements.json` unter `warnunge
 Was die App **nicht** erkennen kann: ob ein NPC tot ist. Die meisten verpassbaren Achievements gehen nur verloren,
 wenn du den falschen NPC tötest. Ein Leuchtfeuer-Asket belebt keine NPCs wieder.
 
+## Weltkarte
+
+Der Knopf **Weltkarte** öffnet ein eigenes Fenster, gedacht für den zweiten Monitor. Es aktualisiert sich live mit
+dem Spielstand, genau wie die Checkliste.
+
+- **Gebiete** sind Kästen, **Verbindungen** Linien. Mausrad zoomt, Ziehen verschiebt, „Ansicht zurücksetzen“ passt alles
+  ins Fenster. DLC-Gebiete haben einen gestrichelten Rand und lassen sich ausblenden.
+- **Farben:** Gold mit dickem Rand = aktuelles Gebiet, braun = besucht, dunkel = noch nicht besucht.
+- In jedem Kasten steht, wie viele **Leuchtfeuer** entzündet und **Bosse** besiegt sind.
+- **Rote gestrichelte Linie mit !** = verschlossen. Beim Darüberfahren steht, was fehlt (Item, Boss) und wie es
+  aufgeht. Andere Symbole: ↕ Aufzug, ▯ Tür, ✦ Teleport, ≈ Schiff, ↓ Abstieg. Ein Pfeil zeigt eine Einbahn.
+- Ein Weg gilt als **offen**, wenn du die Voraussetzung erfüllst (z. B. Schlüssel im Inventar, Boss besiegt) oder
+  beide Gebiete schon besucht hast.
+- **Klick auf ein Gebiet** zeigt rechts Leuchtfeuer (✓ entzündet), Bosse, alle Ausgänge mit Voraussetzungen und die
+  Achievements, die dort eine Rolle spielen, samt aktueller Warnungen.
+
+Alle Gebiets- und Verbindungsdaten stehen in `data/world.json` und sind frei editierbar (Position, Leuchtfeuer,
+Bosse, Voraussetzungen). Unsichere Einträge sind dort mit `unsicher` markiert und erscheinen in der App orange als
+„Bitte prüfen“.
+
 ## Bedienung
 
 - **Häkchen:** Ein Achievement von Hand als erledigt oder offen markieren. Das überschreibt die automatische
@@ -64,7 +86,9 @@ wenn du den falschen NPC tötest. Ein Leuchtfeuer-Asket belebt keine NPCs wieder
 - `data/achievements.json` enthält alle 38 Achievements mit Bedingung, Sicherheit, dem Merkmal verpassbar, Guide
   (`guide`) und unsicheren Punkten (`unsicher`).
   Die erlaubten Bedingungstypen stehen oben in der Datei.
-- `data/gamedata.json` enthält Gebietsnamen, Bossnamen, Zauberlisten und Item-IDs.
+- `data/gamedata.json` enthält Bossnamen, Boss-Reihenfolge, Zauberlisten und Item-IDs.
+- `data/world.json` enthält Gebiete, Karten-IDs, Leuchtfeuer, Bosse pro Gebiet und Verbindungen (siehe Weltkarte).
+  Achievements verweisen über das Feld `gebiete` auf Gebiete dieser Datei.
 
 Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, unbestätigt)“ an.
 
@@ -74,23 +98,26 @@ Mit `"sicherheit": "unsicher"` markierte Erkennungen zeigt die App mit „(?, un
 |---|---|
 | Charaktername, Slot, Seelenlevel, Seelen | zuverlässig |
 | Inventar (Items, Ringe, Zauber, Schlüsselitems) | zuverlässig |
-| Aktuelles Gebiet | zuverlässig. Die Namen einiger Gebiete sind noch unbestätigt (mit „(?)“ markiert). |
+| Aktuelles Gebiet | zuverlässig auf Karten-Ebene. Teilen sich mehrere Gebiete eine Karte (z. B. Lost Bastille, Belfry Luna, Sinners' Rise), werden alle als aktuell markiert. |
+| Entzündete Leuchtfeuer | zuverlässig (Tabelle in den Weltdaten des Slots, mit Fortnite gegengeprüft) |
+| Karten-IDs der Memories, Dark Chasm, Shrine of Winter, einiger DLC-Gebiete | geraten bzw. unbekannt, in `world.json` markiert |
+| Geöffnete Türen und Abkürzungen | noch nicht erkannt. Die Karte zeigt nur, ob du die Voraussetzung erfüllst. |
 | NG-Zyklus | NG (Wert 1) bestätigt, NG+ (ab Wert 2) noch unbestätigt |
 | Besiegte Bosse | Kandidat, passt zu den Boss-Seelen im Inventar, aber noch nicht vollständig bestätigt |
 | Letzter Boss | nur Bosse, die besiegt wurden, während die App lief |
-| Boss-Gebiete für „jetzt“-Warnungen | Kandidaten, abhängig von den teils unbestätigten Gebietsnamen |
+| Boss-Gebiete für „jetzt“-Warnungen | aus `world.json`, für die Hauptgebiete über die Leuchtfeuer-IDs abgesichert |
 | Tote NPCs | nicht erkennbar |
 | Zauber (Master of …) | zuverlässig, Listen vollständig inkl. DLC (31 / 28 / 24 / 23) |
 | Covenants | über den Siegel-Ring im Inventar (nur nach Beitritt; nur „entdeckt“ bitte selbst abhaken) |
 | NPC-Ausrüstung (Benhart, Lucatiel, Vengarl, Cale, McDuff) | über typische Items, unbestätigt |
-| Ur-Leuchtfeuer, NPC-Quests ohne Item, Gesten, Tode, Waffenstufe, Bundrang | noch nicht erkannt, bitte selbst abhaken |
+| Ur-Leuchtfeuer (stehen nicht in der Leuchtfeuer-Tabelle), NPC-Quests ohne Item, Gesten, Tode, Waffenstufe, Bundrang | noch nicht erkannt, bitte selbst abhaken |
 
 ## Bekannte Einschränkungen
 
 - Das Spielstand-Format ist nicht offiziell dokumentiert. Grundlage sind Open-Source-Projekte und eigene Vergleiche.
   Nach einem Spiel-Update kann sich das Format ändern.
 - Guides beruhen u. a. auf einem Trophäenleitfaden für die Originalversion. Wo SotFS abweichen kann (NPC-Orte,
-  Beschwörungszeichen), ist das als unsicher markiert. Deutsche Item- und Zaubernamen sind eigene Übersetzungen.
+  Beschwörungszeichen), ist das als unsicher markiert. 
 - 7 Zauber gibt es erst in NG+ bzw. NG++. Die vier „Master of …“-Achievements sind im ersten Durchgang deshalb nicht
   komplett machbar, außer über Bundränge.
 - Achievement-Namen sind die offiziellen englischen Namen. Die deutschen Beschreibungen sind eigene Übersetzungen.
@@ -114,6 +141,8 @@ java SaveProbe.java diff snapshots\A.sl2 snapshots\B.sl2
 
 - Entschlüsselung (AES-128-CBC, MD5 pro Eintrag): [mi5hmash/SL2Bonfire](https://github.com/mi5hmash/SL2Bonfire)
 - Offsets für Werte und Inventar, Item-IDs (MIT): [alfizari/Dark-Souls-2-Save-Editor-PS4-PC](https://github.com/alfizari/Dark-Souls-2-Save-Editor-PS4-PC)
+- Leuchtfeuer-IDs und -Namen: [Atvaarks DS2 ID-Liste](https://gist.github.com/Atvaark/69c6dcca10b226895a12)
+- Gebiete, Bosse, Leuchtfeuer und Schlüssel-Items pro Gebiet: [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)
 - Reihenfolge der Boss-Zähler: [FrankvdStam/SoulSplitter](https://github.com/FrankvdStam/SoulSplitter)
 - Guides (eigene Zusammenfassung): [PSNProfiles Dark Souls II Trophy Guide](https://psnprofiles.com/guide/357-dark-souls-ii-trophy-guide)
 - NPC-Details für SotFS (Lucatiel, Benhart): [Fextralife Dark Souls 2 Wiki](https://darksouls2.wiki.fextralife.com/)

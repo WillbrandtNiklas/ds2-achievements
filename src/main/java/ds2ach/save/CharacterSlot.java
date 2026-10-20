@@ -20,17 +20,20 @@ public record CharacterSlot(
         String name,
         int level,
         int souls,
-        int ngValue,                  // unbestätigt: 1 = erster Durchgang?
+        int ngValue,                  // 1 = NG (bestätigt), höhere Werte vermutlich NG+
         int mapId,                    // aktuelles Gebiet, z. B. 0x0A040000 = Majula
         Map<Integer, Integer> items,  // Item-ID -> Anzahl (Inventar + Schlüsselitems)
         Map<String, Integer> bossKills, // unbestätigt: Kandidat für Boss-Zaehler
         Set<Integer> visitedMaps,     // Gebiete mit gespeicherten Weltdaten
+        Set<Integer> litBonfires,     // entzündete Leuchtfeuer (IDs wie 4650 = The Far Fire)
         String fingerprint) {         // Hash über Charakter- und Weltdaten, für "welcher Slot wurde zuletzt gespeichert"
 
     static final int NAME = 0x3C0, LEVEL = 0x38, SOULS = 0x3C, NG = 0x404, MAP = 0x3BC;
     static final int INV_START = 0x1E2C, INV_END = 0x10E1C, KEY_START = 0x10E30, KEY_END = 0x11DF0;
     static final int MAP_BLOCK_START = 0x20, MAP_BLOCK_SIZE = 0xB10, MAP_BLOCK_COUNT = 42;
     static final int BOSS_BASE = 0x27B14; // unbestätigt
+    /** Weltdaten: Liste aller Leuchtfeuer-IDs (uint16, endet mit 0), 0x200 Bytes später ein Byte pro Leuchtfeuer (1 = entzündet). */
+    static final int BONFIRE_IDS = 0x282C8, BONFIRE_FLAGS = 0x284C8, BONFIRE_MAX = 256;
 
     /** Boss-Kennung -> Offset im Boss-Zaehler-Feld (laut SoulSplitter). */
     public static final Map<String, Integer> BOSS_OFFSETS = new LinkedHashMap<>();
@@ -77,7 +80,23 @@ public record CharacterSlot(
 
         return new CharacterSlot(index, name, level, b.getInt(SOULS), Short.toUnsignedInt(b.getShort(NG)), b.getInt(MAP),
                 Collections.unmodifiableMap(items), Collections.unmodifiableMap(kills),
-                Collections.unmodifiableSet(visited), hash(slot, world));
+                Collections.unmodifiableSet(visited), readBonfires(world), hash(slot, world));
+    }
+
+    static Set<Integer> readBonfires(byte[] world) {
+        Set<Integer> lit = new TreeSet<>();
+        if (world.length < BONFIRE_FLAGS + BONFIRE_MAX) return lit;
+        ByteBuffer w = SaveFile.le(world);
+        int prev = 0;
+        for (int i = 0; i < BONFIRE_MAX; i++) {
+            int id = Short.toUnsignedInt(w.getShort(BONFIRE_IDS + 2 * i));
+            if (id == 0) break;
+            // Plausibilitaet: aufsteigend sortierte IDs im bekannten Bereich, sonst ist das nicht die Leuchtfeuer-Tabelle
+            if (id <= prev || id < 1000 || id > 40000) return new TreeSet<>();
+            prev = id;
+            if (world[BONFIRE_FLAGS + i] != 0) lit.add(id);
+        }
+        return lit;
     }
 
     private static void readItems(ByteBuffer b, int from, int to, Map<Integer, Integer> out) {

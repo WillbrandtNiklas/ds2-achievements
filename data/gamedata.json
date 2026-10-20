@@ -1,155 +1,43 @@
 {
- "_hinweis": "Kartennamen mit sicher=false sind noch nicht durch Vergleiche bestätigt. Item-IDs aus alfizari/Dark-Souls-2-Save-Editor-PS4-PC (MIT). bossOrder = grobe Story-Reihenfolge; bossMaps = Gebiet des Bosses (unbestaetigt).",
- "maps": [
-  {
-   "id": "0x0A020000",
-   "name": "Zwischen den Dingen",
-   "sicher": true
-  },
-  {
-   "id": "0x0A040000",
-   "name": "Majula",
-   "sicher": true
-  },
-  {
-   "id": "0x0A0A0000",
-   "name": "Wald der gefallenen Riesen",
-   "sicher": true
-  },
-  {
-   "id": "0x0A0E0000",
-   "name": "Lichtsteinbucht Tseldora",
-   "sicher": false
-  },
-  {
-   "id": "0x0A0F0000",
-   "name": "Aldias Festung",
-   "sicher": false
-  },
-  {
-   "id": "0x0A100000",
-   "name": "Verlorene Bastille / Sünderturm",
-   "sicher": false
-  },
-  {
-   "id": "0x0A110000",
-   "name": "Erntetal / Erdspitze",
-   "sicher": false
-  },
-  {
-   "id": "0x0A120000",
-   "name": "Niemandswerft",
-   "sicher": false
-  },
-  {
-   "id": "0x0A130000",
-   "name": "Eisenfestung",
-   "sicher": false
-  },
-  {
-   "id": "0x0A170000",
-   "name": "Jägerdickicht / Untotenfegefeuer",
-   "sicher": false
-  },
-  {
-   "id": "0x0A190000",
-   "name": "Kanal / Schwarze Schlucht",
-   "sicher": false
-  },
-  {
-   "id": "0x0A1B0000",
-   "name": "Drachenhorst / Drachenschrein",
-   "sicher": false
-  },
-  {
-   "id": "0x0A1D0000",
-   "name": "Heides Flammenturm (Weg)",
-   "sicher": false
-  },
-  {
-   "id": "0x0A1E0000",
-   "name": "Heides Flammenturm",
-   "sicher": false
-  },
-  {
-   "id": "0x0A1F0000",
-   "name": "Schattenwald",
-   "sicher": false
-  },
-  {
-   "id": "0x0A200000",
-   "name": "Pharros-Tore / Schrein von Amana",
-   "sicher": false
-  },
-  {
-   "id": "0x0A210000",
-   "name": "Schloss Drangleic",
-   "sicher": false
-  },
-  {
-   "id": "0x0A220000",
-   "name": "Untotengruft",
-   "sicher": false
-  },
-  {
-   "id": "0x28030000",
-   "name": "Dunkle Kluft",
-   "sicher": false
-  },
-  {
-   "id": "0x32230000",
-   "name": "DLC: Versunkene Krone (Shulva)",
-   "sicher": false
-  },
-  {
-   "id": "0x32240000",
-   "name": "DLC: Eiserne Krone (Brume-Turm)",
-   "sicher": false
-  },
-  {
-   "id": "0x32250000",
-   "name": "DLC: Elfenbeinkrone (Eleum Loyce)",
-   "sicher": false
-  }
- ],
+ "_hinweis": "Item- und Zauber-IDs aus alfizari/Dark-Souls-2-Save-Editor-PS4-PC (MIT). bosses = englische Spielnamen. bossOrder = grobe Story-Reihenfolge. Gebiete, Karten-IDs und Boss-Gebiete stehen in world.json.",
  "bosses": {
-  "LastGiant": "Der letzte Riese",
-  "Pursuer": "Der Verfolger",
-  "Dragonrider": "Drachenreiter",
-  "OldDragonslayer": "Alter Drachentöter",
-  "FlexileSentry": "Flexibler Wächter",
-  "RuinSentinels": "Ruinenwächter",
-  "LostSinner": "Verlorene Sünderin",
-  "BelfryGargoyles": "Glockenturm-Gargoyles",
-  "SkeletonLords": "Skelettfürsten",
-  "ExecutionersChariot": "Wagen des Henkers",
-  "CovetousDemon": "Begehrlicher Dämon",
-  "Mytha": "Mytha, die unheilvolle Königin",
-  "SmelterDemon": "Schmelzofendämon",
-  "OldIronKing": "Alter Eisenkönig",
-  "Najka": "Skorpionin Najka",
-  "TheRotten": "Der Verfaulte",
-  "RoyalRatVanguard": "Königliche Rattenvorhut",
-  "RoyalRatAuthority": "Königliche Rattenautorität",
-  "Freja": "Des Herzogs liebe Freja",
-  "LookingGlassKnight": "Spiegelritter",
-  "DemonOfSong": "Dämon des Gesangs",
-  "Velstadt": "Velstadt",
+  "LastGiant": "The Last Giant",
+  "Pursuer": "The Pursuer",
+  "Dragonrider": "Dragonrider",
+  "OldDragonslayer": "Old Dragonslayer",
+  "FlexileSentry": "Flexile Sentry",
+  "RuinSentinels": "Ruin Sentinels",
+  "LostSinner": "Lost Sinner",
+  "BelfryGargoyles": "Belfry Gargoyles",
+  "SkeletonLords": "Skeleton Lords",
+  "ExecutionersChariot": "Executioner's Chariot",
+  "CovetousDemon": "Covetous Demon",
+  "Mytha": "Mytha, the Baneful Queen",
+  "SmelterDemon": "Smelter Demon",
+  "OldIronKing": "Old Iron King",
+  "Najka": "Scorpioness Najka",
+  "TheRotten": "The Rotten",
+  "RoyalRatVanguard": "Royal Rat Vanguard",
+  "RoyalRatAuthority": "Royal Rat Authority",
+  "Freja": "The Duke's Dear Freja",
+  "LookingGlassKnight": "Looking Glass Knight",
+  "DemonOfSong": "Demon of Song",
+  "Velstadt": "Velstadt, the Royal Aegis",
   "Vendrick": "Vendrick",
-  "GuardianDragon": "Wächterdrache",
-  "GiantLord": "Riesenfürst",
-  "ThroneWatcherDefender": "Thronwächter & Thronverteidiger",
+  "GuardianDragon": "Guardian Dragon",
+  "GiantLord": "Giant Lord",
+  "ThroneWatcherDefender": "Throne Watcher and Throne Defender",
   "Nashandra": "Nashandra",
-  "AncientDragon": "Uralter Drache",
-  "Darklurker": "Dunkellauerer",
-  "TwinDragonriders": "Zwillings-Drachenreiter",
-  "Magnus": "Herumstreifender Magnus & Gemeinde",
-  "Aldia": "Aldia",
-  "Elana": "Elana",
-  "Sinh": "Sinh",
-  "Graverobber": "Grabräuber, Varg & Cerah",
-  "BlueSmelterDemon": "Blauer Schmelzofendämon",
-  "FumeKnight": "Rauchritter"
+  "AncientDragon": "Ancient Dragon",
+  "Darklurker": "Darklurker",
+  "TwinDragonriders": "Twin Dragonriders",
+  "Magnus": "Prowling Magus and Congregation",
+  "Aldia": "Aldia, Scholar of the First Sin",
+  "Elana": "Elana, the Squalid Queen",
+  "Sinh": "Sinh, the Slumbering Dragon",
+  "Graverobber": "Afflicted Graverobber, Ancient Soldier Varg and Cerah the Old Explorer",
+  "BlueSmelterDemon": "Blue Smelter Demon",
+  "FumeKnight": "Fume Knight"
  },
  "spells": {
   "sorcery": [
@@ -1707,31 +1595,5 @@
   "Graverobber",
   "BlueSmelterDemon",
   "FumeKnight"
- ],
- "bossMaps": {
-  "LastGiant": "0x0A0A0000",
-  "Pursuer": "0x0A0A0000",
-  "Dragonrider": "0x0A1E0000",
-  "OldDragonslayer": "0x0A1E0000",
-  "FlexileSentry": "0x0A120000",
-  "RuinSentinels": "0x0A100000",
-  "BelfryGargoyles": "0x0A100000",
-  "LostSinner": "0x0A100000",
-  "ExecutionersChariot": "0x0A170000",
-  "SkeletonLords": "0x0A170000",
-  "CovetousDemon": "0x0A110000",
-  "Mytha": "0x0A110000",
-  "SmelterDemon": "0x0A130000",
-  "OldIronKing": "0x0A130000",
-  "TheRotten": "0x0A190000",
-  "Najka": "0x0A1F0000",
-  "Magnus": "0x0A0E0000",
-  "Freja": "0x0A0E0000",
-  "LookingGlassKnight": "0x0A210000",
-  "Velstadt": "0x0A220000",
-  "Vendrick": "0x0A220000",
-  "GuardianDragon": "0x0A1B0000",
-  "AncientDragon": "0x0A1B0000",
-  "Darklurker": "0x28030000"
- }
+ ]
 }

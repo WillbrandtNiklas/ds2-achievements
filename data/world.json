@@ -1,0 +1,1238 @@
+{
+ "_hinweis": [
+  "Weltkarte: Gebiete (Knoten) und Verbindungen (Kanten). Frei editierbar, die App liest die Datei beim Start.",
+  "Gebiet: karten = Karten-IDs aus dem Spielstand (z. B. 0x0A040000 = m10_04 Majula). Mehrere Gebiete können dieselbe Karte teilen.",
+  "x/y = Position auf der Karte in Pixeln. leuchtfeuer = IDs (siehe leuchtfeuerNamen). bosse = Schlüssel aus gamedata.json.",
+  "Verbindung: typ weg | aufzug | tuer | teleport | schiff | sprung. einbahn = nur in Pfeilrichtung.",
+  "voraussetzung: items (eines davon reicht), alleItems (alle nötig), bosse (alle nötig), text (Erklärung). Eine Verbindung gilt als offen, wenn die Voraussetzung erfüllt ist oder beide Gebiete schon besucht wurden.",
+  "unsicher: Hinweise, die noch geprüft werden müssen (werden in der App als 'bitte prüfen' angezeigt).",
+  "Quellen: Fextralife Dark Souls 2 Wiki (Gebiete, Bosse, Leuchtfeuer, Schlüssel), Leuchtfeuer-IDs und -Namen aus Atvaarks ID-Liste, Kartenzuordnung über die Leuchtfeuer-IDs im Spielstand."
+ ],
+ "leuchtfeuerNamen": {
+  "2650": "Fire Keepers' Dwelling",
+  "4650": "The Far Fire",
+  "10655": "Cardinal Tower",
+  "10660": "Soldiers' Rest",
+  "10670": "The Crestfallen's Retreat",
+  "10675": "The Place Unbeknownst",
+  "11650": "Tower of Prayer",
+  "11655": "Crumbled Ruins",
+  "11660": "Rhoy's Resting Place",
+  "11670": "Rise of the Dead",
+  "14650": "Lower Brightstone Cove",
+  "14655": "Royal Army Campsite",
+  "14660": "Chapel Threshold",
+  "15650": "Foregarden",
+  "15655": "Ritual Site",
+  "16650": "Straid's Cell",
+  "16655": "Exile Holding Cells",
+  "16660": "The Tower Apart",
+  "16665": "Upper Ramparts",
+  "16670": "McDuff's Workshop",
+  "16675": "Servants' Quarters",
+  "16685": "The Saltfort",
+  "17650": "The Mines",
+  "17655": "Lower Earthen Peak",
+  "17665": "Poison Pool",
+  "17670": "Central Earthen Peak",
+  "17675": "Upper Earthen Peak",
+  "18650": "Unseen Path to Heide",
+  "19650": "Ironhearth Hall",
+  "19655": "Threshold Bridge",
+  "19660": "Eygil's Idol",
+  "19665": "Belfry Sol Approach",
+  "21650": "King's Gate",
+  "21655": "Central Castle Drangleic",
+  "21660": "Forgotten Chamber",
+  "21665": "Under Castle Drangleic",
+  "23650": "Undead Refuge",
+  "23655": "Bridge Approach",
+  "23660": "Undead Lockaway",
+  "23665": "Undead Purgatory",
+  "24650": "Undead Ditch",
+  "24655": "Undead Crypt Entrance",
+  "25650": "Black Gulch Mouth",
+  "25655": "Central Gutter",
+  "25660": "Hidden Chamber",
+  "25665": "Upper Gutter",
+  "27650": "Dragon Aerie",
+  "27655": "Shrine Entrance",
+  "29650": "Old Akelarre",
+  "31650": "Tower of Flame",
+  "31655": "Heide's Ruin",
+  "31660": "The Blue Cathedral",
+  "32655": "Ruined Fork Road",
+  "32660": "Shaded Ruins",
+  "33655": "Gyrm's Respite",
+  "33660": "Ordeal's End",
+  "34650": "Grave Entrance",
+  "34655": "Harval's Resting Place",
+  "35650": "Sanctum Walk",
+  "35655": "Priestess' Chamber",
+  "35665": "Sanctum Nadir",
+  "35670": "Hidden Sanctum Chamber",
+  "35675": "Lair of the Imperfect",
+  "35680": "Sanctum Interior",
+  "35685": "Tower of Prayer",
+  "36650": "Throne Floor",
+  "36655": "Foyer",
+  "36660": "Upper Floor",
+  "36665": "Iron Hallway Entrance",
+  "36670": "Lowermost Floor",
+  "36675": "The Smelter Throne",
+  "37650": "Outer Wall",
+  "37660": "Abandoned Dwelling",
+  "37665": "Lower Garrison",
+  "37670": "Grand Cathedral",
+  "37675": "Expulsion Chamber",
+  "37685": "Inner Wall"
+ },
+ "gebiete": [
+  {
+   "id": "things_betwixt",
+   "name": "Things Betwixt",
+   "karten": [
+    "0x0A020000"
+   ],
+   "x": 400,
+   "y": 495,
+   "leuchtfeuer": [
+    2650
+   ],
+   "bosse": []
+  },
+  {
+   "id": "majula",
+   "name": "Majula",
+   "karten": [
+    "0x0A040000"
+   ],
+   "x": 590,
+   "y": 400,
+   "leuchtfeuer": [
+    4650
+   ],
+   "bosse": []
+  },
+  {
+   "id": "forest",
+   "name": "Forest of Fallen Giants",
+   "karten": [
+    "0x0A0A0000"
+   ],
+   "x": 210,
+   "y": 305,
+   "leuchtfeuer": [
+    10670,
+    10655,
+    10660,
+    10675
+   ],
+   "bosse": [
+    "LastGiant",
+    "Pursuer"
+   ]
+  },
+  {
+   "id": "memory_vammar",
+   "name": "Memory of Vammar",
+   "karten": [
+    "0x140A0000"
+   ],
+   "x": 20,
+   "y": 210,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "unsicher": [
+    "Karten-ID m20_10 geraten (Variante der Forest-Karte)."
+   ]
+  },
+  {
+   "id": "memory_orro",
+   "name": "Memory of Orro",
+   "karten": [
+    "0x140A0000"
+   ],
+   "x": 20,
+   "y": 305,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "unsicher": [
+    "Karten-ID m20_10 geraten."
+   ]
+  },
+  {
+   "id": "memory_jeigh",
+   "name": "Memory of Jeigh",
+   "karten": [
+    "0x140A0000"
+   ],
+   "x": 20,
+   "y": 400,
+   "leuchtfeuer": [],
+   "bosse": [
+    "GiantLord"
+   ],
+   "unsicher": [
+    "Karten-ID m20_10 geraten."
+   ]
+  },
+  {
+   "id": "heides_tower",
+   "name": "Heide's Tower of Flame",
+   "karten": [
+    "0x0A1F0000"
+   ],
+   "x": 780,
+   "y": 305,
+   "leuchtfeuer": [
+    31650,
+    31655
+   ],
+   "bosse": [
+    "Dragonrider"
+   ]
+  },
+  {
+   "id": "cathedral_of_blue",
+   "name": "Cathedral of Blue",
+   "karten": [
+    "0x0A1F0000"
+   ],
+   "x": 780,
+   "y": 210,
+   "leuchtfeuer": [
+    31660
+   ],
+   "bosse": [
+    "OldDragonslayer"
+   ]
+  },
+  {
+   "id": "no_mans_wharf",
+   "name": "No-Man's Wharf",
+   "karten": [
+    "0x0A120000"
+   ],
+   "x": 970,
+   "y": 305,
+   "leuchtfeuer": [
+    18650
+   ],
+   "bosse": [
+    "FlexileSentry"
+   ]
+  },
+  {
+   "id": "lost_bastille",
+   "name": "The Lost Bastille",
+   "karten": [
+    "0x0A100000"
+   ],
+   "x": 1160,
+   "y": 210,
+   "leuchtfeuer": [
+    16655,
+    16660,
+    16675,
+    16670,
+    16650
+   ],
+   "bosse": [
+    "RuinSentinels"
+   ]
+  },
+  {
+   "id": "belfry_luna",
+   "name": "Belfry Luna",
+   "karten": [
+    "0x0A100000"
+   ],
+   "x": 1160,
+   "y": 115,
+   "leuchtfeuer": [
+    16665
+   ],
+   "bosse": [
+    "BelfryGargoyles"
+   ]
+  },
+  {
+   "id": "sinners_rise",
+   "name": "Sinners' Rise",
+   "karten": [
+    "0x0A100000"
+   ],
+   "x": 1350,
+   "y": 210,
+   "leuchtfeuer": [
+    16685
+   ],
+   "bosse": [
+    "LostSinner"
+   ]
+  },
+  {
+   "id": "huntsmans_copse",
+   "name": "Huntsman's Copse",
+   "karten": [
+    "0x0A170000"
+   ],
+   "x": 780,
+   "y": 115,
+   "leuchtfeuer": [
+    23650,
+    23655,
+    23660
+   ],
+   "bosse": [
+    "SkeletonLords"
+   ]
+  },
+  {
+   "id": "undead_purgatory",
+   "name": "Undead Purgatory",
+   "karten": [
+    "0x0A170000"
+   ],
+   "x": 970,
+   "y": 20,
+   "leuchtfeuer": [
+    23665
+   ],
+   "bosse": [
+    "ExecutionersChariot"
+   ]
+  },
+  {
+   "id": "harvest_valley",
+   "name": "Harvest Valley",
+   "karten": [
+    "0x0A110000"
+   ],
+   "x": 780,
+   "y": 20,
+   "leuchtfeuer": [
+    17665,
+    17650
+   ],
+   "bosse": []
+  },
+  {
+   "id": "earthen_peak",
+   "name": "Earthen Peak",
+   "karten": [
+    "0x0A110000"
+   ],
+   "x": 590,
+   "y": 20,
+   "leuchtfeuer": [
+    17655,
+    17670,
+    17675
+   ],
+   "bosse": [
+    "CovetousDemon",
+    "Mytha"
+   ]
+  },
+  {
+   "id": "iron_keep",
+   "name": "Iron Keep",
+   "karten": [
+    "0x0A130000"
+   ],
+   "x": 400,
+   "y": 20,
+   "leuchtfeuer": [
+    19655,
+    19650,
+    19660
+   ],
+   "bosse": [
+    "SmelterDemon",
+    "OldIronKing"
+   ]
+  },
+  {
+   "id": "belfry_sol",
+   "name": "Belfry Sol",
+   "karten": [
+    "0x0A130000"
+   ],
+   "x": 210,
+   "y": 20,
+   "leuchtfeuer": [
+    19665
+   ],
+   "bosse": []
+  },
+  {
+   "id": "grave_of_saints",
+   "name": "Grave of Saints",
+   "karten": [
+    "0x0A220000"
+   ],
+   "x": 590,
+   "y": 590,
+   "leuchtfeuer": [
+    34650,
+    34655
+   ],
+   "bosse": [
+    "RoyalRatVanguard"
+   ]
+  },
+  {
+   "id": "the_gutter",
+   "name": "The Gutter",
+   "karten": [
+    "0x0A190000"
+   ],
+   "x": 590,
+   "y": 685,
+   "leuchtfeuer": [
+    25665,
+    25655
+   ],
+   "bosse": []
+  },
+  {
+   "id": "black_gulch",
+   "name": "Black Gulch",
+   "karten": [
+    "0x0A190000"
+   ],
+   "x": 590,
+   "y": 780,
+   "leuchtfeuer": [
+    25650,
+    25660
+   ],
+   "bosse": [
+    "TheRotten"
+   ]
+  },
+  {
+   "id": "shaded_woods",
+   "name": "Shaded Woods",
+   "karten": [
+    "0x0A200000",
+    "0x0A1D0000"
+   ],
+   "x": 970,
+   "y": 495,
+   "leuchtfeuer": [
+    32660,
+    32655,
+    29650
+   ],
+   "bosse": [
+    "Najka"
+   ]
+  },
+  {
+   "id": "doors_of_pharros",
+   "name": "Doors of Pharros",
+   "karten": [
+    "0x0A210000"
+   ],
+   "x": 1160,
+   "y": 590,
+   "leuchtfeuer": [
+    33655,
+    33660
+   ],
+   "bosse": [
+    "RoyalRatAuthority"
+   ]
+  },
+  {
+   "id": "brightstone_cove",
+   "name": "Brightstone Cove Tseldora",
+   "karten": [
+    "0x0A0E0000"
+   ],
+   "x": 1350,
+   "y": 590,
+   "leuchtfeuer": [
+    14655,
+    14660,
+    14650
+   ],
+   "bosse": [
+    "Magnus",
+    "Freja"
+   ]
+  },
+  {
+   "id": "shrine_of_winter",
+   "name": "Shrine of Winter",
+   "karten": [],
+   "x": 1160,
+   "y": 495,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "unsicher": [
+    "Karten-ID unbekannt."
+   ]
+  },
+  {
+   "id": "drangleic_castle",
+   "name": "Drangleic Castle",
+   "karten": [
+    "0x0A150000"
+   ],
+   "x": 1350,
+   "y": 495,
+   "leuchtfeuer": [
+    21650,
+    21665,
+    21660,
+    21655
+   ],
+   "bosse": [
+    "TwinDragonriders"
+   ]
+  },
+  {
+   "id": "kings_passage",
+   "name": "King's Passage",
+   "karten": [
+    "0x0A150000"
+   ],
+   "x": 1540,
+   "y": 495,
+   "leuchtfeuer": [],
+   "bosse": [
+    "LookingGlassKnight"
+   ]
+  },
+  {
+   "id": "throne_of_want",
+   "name": "Throne of Want",
+   "karten": [
+    "0x14150000"
+   ],
+   "x": 1540,
+   "y": 400,
+   "leuchtfeuer": [],
+   "bosse": [
+    "ThroneWatcherDefender",
+    "Nashandra",
+    "Aldia"
+   ],
+   "unsicher": [
+    "Karten-ID m20_21 geraten."
+   ]
+  },
+  {
+   "id": "shrine_of_amana",
+   "name": "Shrine of Amana",
+   "karten": [
+    "0x0A0B0000"
+   ],
+   "x": 1730,
+   "y": 495,
+   "leuchtfeuer": [
+    11650,
+    11655,
+    11660,
+    11670
+   ],
+   "bosse": [
+    "DemonOfSong"
+   ]
+  },
+  {
+   "id": "undead_crypt",
+   "name": "Undead Crypt",
+   "karten": [
+    "0x0A180000"
+   ],
+   "x": 1730,
+   "y": 590,
+   "leuchtfeuer": [
+    24655,
+    24650
+   ],
+   "bosse": [
+    "Velstadt",
+    "Vendrick"
+   ]
+  },
+  {
+   "id": "memory_of_the_king",
+   "name": "Memory of the King",
+   "karten": [
+    "0x14180000"
+   ],
+   "x": 1730,
+   "y": 685,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "unsicher": [
+    "Karten-ID m20_24 und Zugang geraten."
+   ]
+  },
+  {
+   "id": "aldias_keep",
+   "name": "Aldia's Keep",
+   "karten": [
+    "0x0A0F0000"
+   ],
+   "x": 970,
+   "y": 685,
+   "leuchtfeuer": [
+    15650,
+    15655
+   ],
+   "bosse": [
+    "GuardianDragon"
+   ]
+  },
+  {
+   "id": "dragon_aerie",
+   "name": "Dragon Aerie",
+   "karten": [
+    "0x0A1B0000"
+   ],
+   "x": 970,
+   "y": 780,
+   "leuchtfeuer": [
+    27650
+   ],
+   "bosse": []
+  },
+  {
+   "id": "dragon_shrine",
+   "name": "Dragon Shrine",
+   "karten": [
+    "0x0A1B0000"
+   ],
+   "x": 1160,
+   "y": 780,
+   "leuchtfeuer": [
+    27655
+   ],
+   "bosse": [
+    "AncientDragon"
+   ]
+  },
+  {
+   "id": "dark_chasm",
+   "name": "Dark Chasm of Old",
+   "karten": [
+    "0x28320000",
+    "0x28330000",
+    "0x28340000"
+   ],
+   "x": 780,
+   "y": 685,
+   "leuchtfeuer": [],
+   "bosse": [
+    "Darklurker"
+   ],
+   "unsicher": [
+    "Karten-IDs m40_50 bis m40_52 geraten."
+   ]
+  },
+  {
+   "id": "shulva",
+   "name": "Shulva, Sanctum City",
+   "karten": [
+    "0x32230000"
+   ],
+   "x": 400,
+   "y": 780,
+   "leuchtfeuer": [
+    35650,
+    35685
+   ],
+   "bosse": [],
+   "dlc": "Sunken King"
+  },
+  {
+   "id": "dragons_sanctum",
+   "name": "Dragon's Sanctum",
+   "karten": [
+    "0x32230000"
+   ],
+   "x": 210,
+   "y": 780,
+   "leuchtfeuer": [
+    35655,
+    35670,
+    35675,
+    35680
+   ],
+   "bosse": [],
+   "dlc": "Sunken King"
+  },
+  {
+   "id": "dragons_rest",
+   "name": "Dragon's Rest",
+   "karten": [
+    "0x32230000"
+   ],
+   "x": 20,
+   "y": 780,
+   "leuchtfeuer": [
+    35665
+   ],
+   "bosse": [
+    "Elana",
+    "Sinh"
+   ],
+   "dlc": "Sunken King"
+  },
+  {
+   "id": "cave_of_the_dead",
+   "name": "Cave of the Dead",
+   "karten": [
+    "0x32230000"
+   ],
+   "x": 210,
+   "y": 875,
+   "leuchtfeuer": [],
+   "bosse": [
+    "Graverobber"
+   ],
+   "dlc": "Sunken King"
+  },
+  {
+   "id": "brume_tower",
+   "name": "Brume Tower",
+   "karten": [
+    "0x32240000"
+   ],
+   "x": 210,
+   "y": 115,
+   "leuchtfeuer": [
+    36655,
+    36650,
+    36660,
+    36670,
+    36675
+   ],
+   "bosse": [
+    "FumeKnight"
+   ],
+   "dlc": "Old Iron King"
+  },
+  {
+   "id": "iron_passage",
+   "name": "Iron Passage",
+   "karten": [
+    "0x32240000"
+   ],
+   "x": 20,
+   "y": 115,
+   "leuchtfeuer": [
+    36665
+   ],
+   "bosse": [
+    "BlueSmelterDemon"
+   ],
+   "dlc": "Old Iron King"
+  },
+  {
+   "id": "memory_old_iron_king",
+   "name": "Memory of the Old Iron King",
+   "karten": [],
+   "x": 20,
+   "y": 20,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "dlc": "Old Iron King",
+   "unsicher": [
+    "Karten-ID unbekannt. Boss Sir Alonne wird noch nicht erkannt."
+   ]
+  },
+  {
+   "id": "eleum_loyce",
+   "name": "Frozen Eleum Loyce",
+   "karten": [
+    "0x32250000"
+   ],
+   "x": 1160,
+   "y": 400,
+   "leuchtfeuer": [
+    37650,
+    37660,
+    37665,
+    37675,
+    37685
+   ],
+   "bosse": [],
+   "dlc": "Ivory King",
+   "unsicher": [
+    "Bosse Aava und Burnt Ivory King werden noch nicht erkannt."
+   ]
+  },
+  {
+   "id": "grand_cathedral",
+   "name": "Grand Cathedral",
+   "karten": [
+    "0x32250000"
+   ],
+   "x": 1350,
+   "y": 400,
+   "leuchtfeuer": [
+    37670
+   ],
+   "bosse": [],
+   "dlc": "Ivory King"
+  },
+  {
+   "id": "old_chaos",
+   "name": "The Old Chaos",
+   "karten": [
+    "0x32250000"
+   ],
+   "x": 1350,
+   "y": 305,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "dlc": "Ivory King"
+  },
+  {
+   "id": "frigid_outskirts",
+   "name": "Frigid Outskirts",
+   "karten": [],
+   "x": 1160,
+   "y": 305,
+   "leuchtfeuer": [],
+   "bosse": [],
+   "dlc": "Ivory King",
+   "unsicher": [
+    "Karten-ID unbekannt. Bosse Lud und Zallen werden noch nicht erkannt."
+   ]
+  }
+ ],
+ "verbindungen": [
+  {
+   "von": "things_betwixt",
+   "nach": "majula",
+   "typ": "weg"
+  },
+  {
+   "von": "majula",
+   "nach": "forest",
+   "typ": "weg"
+  },
+  {
+   "von": "majula",
+   "nach": "heides_tower",
+   "typ": "weg",
+   "hinweis": "Tunnel neben dem Leuchtturm-Klippenweg."
+  },
+  {
+   "von": "majula",
+   "nach": "shaded_woods",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x039BB8A8"
+    ],
+    "text": "Rosabeth of Melfia (Statue vor dem Hebel) mit einem Fragrant Branch of Yore entsteinern, dann den Hebel ziehen."
+   },
+   "hinweis": "Weg über die losen Steinstufen an der Klippe."
+  },
+  {
+   "von": "majula",
+   "nach": "huntsmans_copse",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x03088510"
+    ],
+    "text": "Die Rotunde in Majula drehen (Rotunda Lockstone)."
+   },
+   "unsicher": [
+    "Woher der Rotunda Lockstone kommt (Licia of Lindeldt in Majula), bitte prüfen."
+   ]
+  },
+  {
+   "von": "majula",
+   "nach": "grave_of_saints",
+   "typ": "sprung",
+   "voraussetzung": {
+    "items": [
+     "0x0268C2A0"
+    ],
+    "text": "Die Grube in Majula: Leitern bei Laddersmith Gilligan kaufen oder mit Silvercat Ring hinunterspringen."
+   },
+   "unsicher": [
+    "Leitern bei Gilligan: Kosten und Ablauf bitte prüfen."
+   ]
+  },
+  {
+   "von": "forest",
+   "nach": "lost_bastille",
+   "typ": "teleport",
+   "einbahn": true,
+   "voraussetzung": {
+    "bosse": [
+     "Pursuer"
+    ],
+    "text": "Nach dem Pursuer trägt dich der Adler beim Leuchtfeuer The Place Unbeknownst in die Lost Bastille."
+   }
+  },
+  {
+   "von": "forest",
+   "nach": "memory_vammar",
+   "typ": "teleport",
+   "voraussetzung": {
+    "items": [
+     "0x0308D330"
+    ],
+    "text": "Ashen Mist Heart am Riesen beim Schildkrötenritter benutzen."
+   }
+  },
+  {
+   "von": "forest",
+   "nach": "memory_orro",
+   "typ": "teleport",
+   "voraussetzung": {
+    "items": [
+     "0x0308D330"
+    ],
+    "text": "Ashen Mist Heart am Riesen benutzen."
+   }
+  },
+  {
+   "von": "forest",
+   "nach": "memory_jeigh",
+   "typ": "teleport",
+   "voraussetzung": {
+    "text": "Ashen Mist Heart am Riesen hinter der Tür mit dem King's Ring benutzen.",
+    "alleItems": [
+     "0x0308D330",
+     "0x026A2230"
+    ]
+   },
+   "hinweis": "Tür braucht den King's Ring, der Riese dahinter das Ashen Mist Heart."
+  },
+  {
+   "von": "heides_tower",
+   "nach": "cathedral_of_blue",
+   "typ": "weg",
+   "hinweis": "Links an der Abzweigung, Zugbrücke mit Schalter rechts."
+  },
+  {
+   "von": "heides_tower",
+   "nach": "no_mans_wharf",
+   "typ": "weg"
+  },
+  {
+   "von": "no_mans_wharf",
+   "nach": "lost_bastille",
+   "typ": "schiff",
+   "voraussetzung": {
+    "bosse": [
+     "FlexileSentry"
+    ],
+    "text": "Leuchtturm-Feuer anzünden, dann kommt das Schiff. Auf dem Schiff wartet der Flexile Sentry."
+   }
+  },
+  {
+   "von": "lost_bastille",
+   "nach": "belfry_luna",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x039BB4C0"
+    ],
+    "text": "Pharros' Lockstone in das Pharros-Schloss unter dem Leuchtfeuer nach den Ruin Sentinels."
+   }
+  },
+  {
+   "von": "lost_bastille",
+   "nach": "sinners_rise",
+   "typ": "aufzug",
+   "hinweis": "Über The Saltfort."
+  },
+  {
+   "von": "huntsmans_copse",
+   "nach": "undead_purgatory",
+   "typ": "weg",
+   "hinweis": "Über die lange Holzbrücke."
+  },
+  {
+   "von": "huntsmans_copse",
+   "nach": "harvest_valley",
+   "typ": "weg",
+   "voraussetzung": {
+    "bosse": [
+     "SkeletonLords"
+    ]
+   }
+  },
+  {
+   "von": "harvest_valley",
+   "nach": "earthen_peak",
+   "typ": "weg"
+  },
+  {
+   "von": "earthen_peak",
+   "nach": "iron_keep",
+   "typ": "aufzug",
+   "voraussetzung": {
+    "bosse": [
+     "Mytha"
+    ]
+   },
+   "hinweis": "Oben in der Windmühle."
+  },
+  {
+   "von": "iron_keep",
+   "nach": "belfry_sol",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x039BB4C0"
+    ],
+    "text": "Pharros' Lockstone (Tür nach der kleinen Brücke mit den Schildkrötenrittern)."
+   }
+  },
+  {
+   "von": "grave_of_saints",
+   "nach": "the_gutter",
+   "typ": "weg"
+  },
+  {
+   "von": "the_gutter",
+   "nach": "black_gulch",
+   "typ": "weg"
+  },
+  {
+   "von": "shaded_woods",
+   "nach": "doors_of_pharros",
+   "typ": "weg"
+  },
+  {
+   "von": "doors_of_pharros",
+   "nach": "brightstone_cove",
+   "typ": "weg"
+  },
+  {
+   "von": "shaded_woods",
+   "nach": "shrine_of_winter",
+   "typ": "weg",
+   "hinweis": "Über Ruined Fork Road."
+  },
+  {
+   "von": "shrine_of_winter",
+   "nach": "drangleic_castle",
+   "typ": "tuer",
+   "voraussetzung": {
+    "bosse": [
+     "LostSinner",
+     "OldIronKing",
+     "TheRotten",
+     "Freja"
+    ],
+    "text": "Das Tor öffnet sich mit den vier Großen Seelen (Lost Sinner, Old Iron King, The Rotten, The Duke's Dear Freja) oder ab 1.000.000 Seelen-Gedächtnis."
+   }
+  },
+  {
+   "von": "drangleic_castle",
+   "nach": "kings_passage",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x03043F50"
+    ],
+    "text": "Key to King's Passage (liegt im Schloss)."
+   }
+  },
+  {
+   "von": "kings_passage",
+   "nach": "shrine_of_amana",
+   "typ": "weg",
+   "voraussetzung": {
+    "bosse": [
+     "LookingGlassKnight"
+    ]
+   }
+  },
+  {
+   "von": "shrine_of_amana",
+   "nach": "undead_crypt",
+   "typ": "weg",
+   "voraussetzung": {
+    "bosse": [
+     "DemonOfSong"
+    ]
+   }
+  },
+  {
+   "von": "undead_crypt",
+   "nach": "memory_of_the_king",
+   "typ": "teleport",
+   "voraussetzung": {
+    "items": [
+     "0x0308D330"
+    ]
+   },
+   "unsicher": [
+    "Zugang zur Memory of the King bitte prüfen."
+   ]
+  },
+  {
+   "von": "shaded_woods",
+   "nach": "aldias_keep",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x026A2230"
+    ],
+    "text": "Tür bei Ruined Fork Road öffnet sich mit dem King's Ring."
+   }
+  },
+  {
+   "von": "aldias_keep",
+   "nach": "dragon_aerie",
+   "typ": "weg",
+   "voraussetzung": {
+    "bosse": [
+     "GuardianDragon"
+    ]
+   }
+  },
+  {
+   "von": "dragon_aerie",
+   "nach": "dragon_shrine",
+   "typ": "weg"
+  },
+  {
+   "von": "drangleic_castle",
+   "nach": "throne_of_want",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x026A2230"
+    ],
+    "text": "King's Gate mit dem King's Ring öffnen. Für Nashandra brauchst du außerdem Giant's Kinship (Giant Lord)."
+   }
+  },
+  {
+   "von": "black_gulch",
+   "nach": "dark_chasm",
+   "typ": "teleport",
+   "voraussetzung": {
+    "text": "Darkdiver Grandahl finden, Pilgrims of Dark beitreten, Human Effigy opfern."
+   }
+  },
+  {
+   "von": "shaded_woods",
+   "nach": "dark_chasm",
+   "typ": "teleport",
+   "voraussetzung": {
+    "text": "Darkdiver Grandahl finden, Pilgrims of Dark beitreten, Human Effigy opfern."
+   }
+  },
+  {
+   "von": "drangleic_castle",
+   "nach": "dark_chasm",
+   "typ": "teleport",
+   "voraussetzung": {
+    "text": "Darkdiver Grandahl finden, Pilgrims of Dark beitreten, Human Effigy opfern."
+   }
+  },
+  {
+   "von": "black_gulch",
+   "nach": "shulva",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x03197500"
+    ],
+    "text": "Dragon Talon öffnet die Tür ganz hinten in der Black Gulch."
+   }
+  },
+  {
+   "von": "shulva",
+   "nach": "dragons_sanctum",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x031E08E0"
+    ],
+    "text": "Eternal Sanctum Key."
+   }
+  },
+  {
+   "von": "dragons_sanctum",
+   "nach": "dragons_rest",
+   "typ": "weg"
+  },
+  {
+   "von": "dragons_sanctum",
+   "nach": "cave_of_the_dead",
+   "typ": "weg"
+  },
+  {
+   "von": "iron_keep",
+   "nach": "brume_tower",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x031AFBA0"
+    ],
+    "text": "Heavy Iron Key: Tür hinter dem Altar tief in der Iron Keep."
+   }
+  },
+  {
+   "von": "brume_tower",
+   "nach": "iron_passage",
+   "typ": "weg",
+   "unsicher": [
+    "Voraussetzung (Tower Key?) bitte prüfen."
+   ]
+  },
+  {
+   "von": "iron_passage",
+   "nach": "memory_old_iron_king",
+   "typ": "teleport",
+   "voraussetzung": {
+    "items": [
+     "0x0308D330"
+    ]
+   }
+  },
+  {
+   "von": "shrine_of_winter",
+   "nach": "eleum_loyce",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x031C8240"
+    ],
+    "text": "Frozen Flower öffnet den neuen Weg am Shrine of Winter."
+   }
+  },
+  {
+   "von": "eleum_loyce",
+   "nach": "grand_cathedral",
+   "typ": "weg"
+  },
+  {
+   "von": "grand_cathedral",
+   "nach": "old_chaos",
+   "typ": "weg"
+  },
+  {
+   "von": "eleum_loyce",
+   "nach": "frigid_outskirts",
+   "typ": "tuer",
+   "voraussetzung": {
+    "items": [
+     "0x03211620"
+    ],
+    "text": "Garrison Ward Key."
+   }
+  }
+ ]
+}

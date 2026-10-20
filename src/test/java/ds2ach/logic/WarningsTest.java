@@ -20,11 +20,11 @@ class WarningsTest {
     @BeforeAll
     static void load() throws Exception {
         db = AchievementDb.load(Path.of("data"));
-        w = new Warnings(db.gameData);
+        w = new Warnings(db.gameData, db.world);
     }
 
     static CharacterSlot slot(int map, Map<Integer, Integer> items, Map<String, Integer> kills) {
-        return new CharacterSlot(1, "Test", 10, 0, 1, map, items, kills, Set.of(), "x");
+        return new CharacterSlot(1, "Test", 10, 0, 1, map, items, kills, Set.of(), Set.of(), "x");
     }
 
     static List<Warnings.Hinweis> hints(CharacterSlot c, String id) {
@@ -37,7 +37,7 @@ class WarningsTest {
         var h = hints(slot(0x0A040000, Map.of(), Map.of("FlexileSentry", 1)), "lucatiel");
         assertEquals(3, h.size());
         assertTrue(h.stream().allMatch(x -> x.stufe() == Warnings.Stufe.KOMMEND));
-        assertFalse(h.stream().anyMatch(x -> x.text().contains("Flexibler")), "besiegter Boss darf nicht mehr auftauchen");
+        assertFalse(h.stream().anyMatch(x -> x.text().contains("Flexile")), "besiegter Boss darf nicht mehr auftauchen");
     }
 
     @Test
@@ -52,7 +52,7 @@ class WarningsTest {
     void bossInCurrentAreaIsUrgent() {
         // In der Niemandswerft (m10_18) ist der Flexible Wächter "jetzt"
         var h = hints(slot(0x0A120000, Map.of(), Map.of()), "lucatiel");
-        assertTrue(h.stream().anyMatch(x -> x.stufe() == Warnings.Stufe.JETZT && x.text().contains("Flexibler")));
+        assertTrue(h.stream().anyMatch(x -> x.stufe() == Warnings.Stufe.JETZT && x.text().contains("Flexile")));
     }
 
     @Test
@@ -72,9 +72,9 @@ class WarningsTest {
     @Test
     void areaWarningOnlyInArea() {
         assertTrue(hints(slot(0x0A0F0000, Map.of(), Map.of()), "lucatiel").stream()
-                .anyMatch(x -> x.stufe() == Warnings.Stufe.JETZT && x.text().contains("Aldias Festung")));
+                .anyMatch(x -> x.stufe() == Warnings.Stufe.JETZT && x.text().contains("Aldia's Keep")));
         assertFalse(hints(slot(0x0A040000, Map.of(), Map.of()), "lucatiel").stream()
-                .anyMatch(x -> x.text().contains("Aldias Festung")));
+                .anyMatch(x -> x.text().contains("Aldia's Keep")));
     }
 
     @Test
